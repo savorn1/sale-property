@@ -1,38 +1,36 @@
 package com.sam.library.student.exception;
 
-import org.apache.coyote.BadRequestException;
+import com.sam.library.student.util.ApiResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorBody(ex.getMessage()));
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
+        ApiResponse<Void> response = ApiResponse.error(404, ex.getMessage());
+        log.warn("traceId={} status=404 message={}", response.getTraceId(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleBadRequest(IllegalArgumentException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(errorBody(ex.getMessage()));
+    public ResponseEntity<ApiResponse<Void>> handleBadRequest(IllegalArgumentException ex) {
+        ApiResponse<Void> response = ApiResponse.error(400, ex.getMessage());
+        log.warn("traceId={} status=400 message={}", response.getTraceId(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneral(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(errorBody("Internal server error"));
-    }
-
-    private Map<String, Object> errorBody(String message) {
-        return Map.of(
-                "timestamp", LocalDateTime.now().toString(),
-                "message", message
-        );
+    public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
+        ApiResponse<Void> response = ApiResponse.error(500, "Internal server error");
+        log.error("traceId={} status=500 message={}", response.getTraceId(), ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

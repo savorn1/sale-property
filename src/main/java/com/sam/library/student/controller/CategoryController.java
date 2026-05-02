@@ -1,7 +1,5 @@
 package com.sam.library.student.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,9 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sam.library.student.dto.BrandDTO;
-import com.sam.library.student.mapper.BrandMapper;
-import com.sam.library.student.service.BrandService;
+import com.sam.library.student.dto.CategoryDTO;
+import com.sam.library.student.entity.Category;
+import com.sam.library.student.mapper.CateogoryMapper;
+import com.sam.library.student.service.CategoryService;
 import com.sam.library.student.util.ApiResponse;
 import com.sam.library.student.util.PageResponse;
 
@@ -25,43 +24,41 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@RequestMapping("api/category")
+@Tag(name = "Category", description = "Category service API")
 @RestController
-@RequestMapping("api/brand")
-@Tag(name = "Brand", description = "Brand services APIs")
 @RequiredArgsConstructor
-public class BrandController {
-    private final BrandService brandService;
-    private final BrandMapper brandMapper;
+public class CategoryController {
+    private final CategoryService categoryService;
+    private final CateogoryMapper cateogoryMapper;
 
     @GetMapping
-    public ResponseEntity<PageResponse<BrandDTO>> getAllBrands(
+    public ResponseEntity<PageResponse<CategoryDTO>> getAllCategories(
             @Parameter(description = "Page number, 1-based", example = "1")
             @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "Number of items per page", example = "10")
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<BrandDTO> result = brandService.getAllBrands(pageable)
-                .map(brandMapper::toBrandDTO);
+        Page<CategoryDTO> result = categoryService.getAllCategories(pageable)
+                .map(cateogoryMapper::toCategoryDTO);
         return ResponseEntity.ok(PageResponse.of(result));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<BrandDTO>> getBrandById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(brandMapper.toBrandDTO(brandService.getBrandById(id))));
+    public ResponseEntity<ApiResponse<CategoryDTO>> getCategoryById(@PathVariable Long id) {
+        Category category = categoryService.getCategoryById(id);
+        return ResponseEntity.ok(ApiResponse.success(cateogoryMapper.toCategoryDTO(category)));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<BrandDTO>> createBrand(@RequestBody BrandDTO dto) {
-        return ResponseEntity.status(201).body(ApiResponse.success("Brand created", brandMapper.toBrandDTO(brandService.createBrand(brandMapper.toBrand(dto)))));
+    public ResponseEntity<ApiResponse<CategoryDTO>> createCategory(@RequestBody CategoryDTO dto) {
+        Category category = categoryService.createCategory(cateogoryMapper.toCategory(dto));
+        return ResponseEntity.status(201).body(ApiResponse.success("Category created", cateogoryMapper.toCategoryDTO(category)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteBrand(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(brandService.deleteBrand(id)));
-    }
-
-    @DeleteMapping("/delete-all")
-    public ResponseEntity<ApiResponse<String>> deleteBrands(@RequestBody List<Long> ids) {
-        return ResponseEntity.ok(ApiResponse.success(brandService.deleteBrands(ids)));
+    public ResponseEntity<ApiResponse<String>> deleteCategory(@PathVariable Long id) {
+        String result = categoryService.deleteCategory(id);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }

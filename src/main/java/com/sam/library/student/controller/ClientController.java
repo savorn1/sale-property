@@ -1,7 +1,8 @@
-package  com.sam.library.student.controller;
+package com.sam.library.student.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,13 +11,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sam.library.student.dto.ClientDTO;
 import com.sam.library.student.entity.Client;
 import com.sam.library.student.mapper.ClientMapper;
 import com.sam.library.student.service.ClientService;
+import com.sam.library.student.util.ApiResponse;
+import com.sam.library.student.util.PageResponse;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -28,44 +33,39 @@ public class ClientController {
     private final ClientService clientService;
     private final ClientMapper clientMapper;
 
-
     @GetMapping
-    public ResponseEntity<List<ClientDTO>> getAllClients() {
-        List<ClientDTO> clients = clientService.getAllClients()
-                .stream()
-                .map(clientMapper::toClientDTO)
-                .toList();
-        return ResponseEntity.ok(clients);
+    public ResponseEntity<PageResponse<ClientDTO>> getAllClients(
+            @Parameter(description = "Page number, 1-based", example = "1")
+            @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "Number of items per page", example = "10")
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<ClientDTO> result = clientService.getAllClients(pageable)
+                .map(clientMapper::toClientDTO);
+        return ResponseEntity.ok(PageResponse.of(result));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ClientDTO> getClientById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<ClientDTO>> getClientById(@PathVariable Long id) {
         Client client = clientService.getClientById(id);
-        return ResponseEntity.ok(clientMapper.toClientDTO(client));
+        return ResponseEntity.ok(ApiResponse.success(clientMapper.toClientDTO(client)));
     }
 
     @PostMapping
-    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO dto) {
+    public ResponseEntity<ApiResponse<ClientDTO>> createClient(@RequestBody ClientDTO dto) {
         Client created = clientService.createClient(clientMapper.toClient(dto));
-        return ResponseEntity.status(201).body(clientMapper.toClientDTO(created));
+        return ResponseEntity.status(201).body(ApiResponse.success("Client created", clientMapper.toClientDTO(created)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Client> updateClient(@PathVariable Long id, @RequestBody ClientDTO dto) {
+    public ResponseEntity<ApiResponse<ClientDTO>> updateClient(@PathVariable Long id, @RequestBody ClientDTO dto) {
         Client client = clientService.updateClient(id, clientMapper.toClient(dto));
-        return ResponseEntity.ok(client);
+        return ResponseEntity.ok(ApiResponse.success("Client updated", clientMapper.toClientDTO(client)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteClient(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<String>> deleteClient(@PathVariable Long id) {
         String result = clientService.deleteClient(id);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
-
-    // // Bunld delete
-    // public ResponseEntity<String> deleteClients(@RequestBody List<Long> ids) {
-    //     String result = clientService.deleteClients(ids);
-    //     return ResponseEntity.ok(result);
-    // }
-
 }

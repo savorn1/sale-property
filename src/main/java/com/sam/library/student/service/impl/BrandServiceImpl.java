@@ -2,6 +2,8 @@ package com.sam.library.student.service.impl;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.sam.library.student.entity.Brand;
@@ -19,6 +21,11 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public List<Brand> getAllBrands(){
         return brandRepository.findAll();
+    }
+
+    @Override
+    public Page<Brand> getAllBrands(Pageable pageable) {
+        return brandRepository.findAll(pageable);
     }
 
     @Override
