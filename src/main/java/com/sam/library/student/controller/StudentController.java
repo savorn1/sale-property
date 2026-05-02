@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("api/student")
 @Tag(name = "Student", description = "Student services APIs")
 public class StudentController {
+    /* 
     @Autowired
     private StudentService studentService;
     @Autowired
@@ -46,4 +47,6 @@ public class StudentController {
         String res = studentService.updateStudentById(studentEntity);
         return ResponseEntity.ok(res);
     }
+
+    */
 }

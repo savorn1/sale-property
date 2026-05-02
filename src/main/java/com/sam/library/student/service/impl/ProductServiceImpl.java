@@ -1,12 +1,16 @@
 package com.sam.library.student.service.impl;
 
+import com.sam.library.student.entity.Brand;
+import com.sam.library.student.entity.Category;
 import com.sam.library.student.entity.Product;
 import com.sam.library.student.exception.ResourceNotFoundException;
+import com.sam.library.student.repository.BrandRepository;
+import com.sam.library.student.repository.CategoryRepository;
 import com.sam.library.student.repository.ProductRepository;
 import com.sam.library.student.service.ProductService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -14,6 +18,8 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final BrandRepository brandRepository;
 
     @Override
     public List<Product> getAllProducts() {
@@ -27,17 +33,43 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product createProduct(Product product) {
+    public Product createProduct(Product product, Long categoryId, Long brandId) {
+
+        String name = product.getName();
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Product name cannot be null or empty.");
+        }
+        Product existing = productRepository.findByName(name).orElse(null);
+        if (existing != null) {
+            throw new IllegalArgumentException("Product with name '" + name + "' already exists.");
+        }
+
+        if (categoryId != null) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Category", categoryId));
+            product.setCategory(category);
+        }
+        if (brandId != null) {
+            Brand brand = brandRepository.findById(brandId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Brand", brandId));
+            product.setBrand(brand);
+        }
         return productRepository.save(product);
     }
 
     @Override
-    public String updateProduct(Long id, Product product) {
+    public String updateProduct(Long id, Product product, Long brandId) {
+        Brand brand = null;
+        if (brandId != null) {
+            brand = brandRepository.findById(brandId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Brand", brandId));
+        }
         int updated = productRepository.updateProductDetails(
                 id,
                 product.getName(),
                 product.getDescription(),
-                product.getPrice());
+                product.getPrice(),
+                brand);
         if (updated == 0) throw new ResourceNotFoundException("Product", id);
         return "Product updated successfully.";
     }
@@ -48,4 +80,11 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
         return "Product deleted successfully.";
     }
+
+    @Override
+    public Product getProductByName(String name) {
+        return productRepository.findByName(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", name));
+    }
+
 }

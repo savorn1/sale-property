@@ -2,12 +2,12 @@ package com.sam.library.student.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
+import lombok.EqualsAndHashCode;
 
 @Entity
 @Data
-
-public class Product {
+@EqualsAndHashCode(callSuper = true)
+public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,7 +20,15 @@ public class Product {
     private String description;
 
     @Column(nullable = false)
-    private Double price = 0.0; 
+    private Double price = 0.0;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "brand_id")
+    private Brand brand;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
 
 
     // //Getter and Setter for name

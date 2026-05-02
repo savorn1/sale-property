@@ -2,14 +2,12 @@ package com.sam.library.student.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.JdbcTypeCode;
-
-import java.sql.Types;
-import java.time.LocalDate;
+import lombok.EqualsAndHashCode;
 
 @Entity
 @Data
-public class Student {
+@EqualsAndHashCode(callSuper = true)
+public class Student extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,8 +28,4 @@ public class Student {
 
     @Column(nullable = false)
     private String email;
-
-    private LocalDate createdAt;
-
-    private LocalDate updatedAt;
 }
