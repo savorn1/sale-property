@@ -1,4 +1,4 @@
-package com.sam.library.student.util;
+package com.sam.library.student.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.domain.Page;
@@ -11,7 +11,7 @@ public class PageResponse<T> {
     @JsonProperty("traceId")
     private String traceId;
 
-    @JsonProperty("status_code")
+    @JsonProperty("statusCode")
     private int statusCode;
 
     private String message;

@@ -18,8 +18,8 @@ import com.sam.library.student.dto.ClientDTO;
 import com.sam.library.student.entity.Client;
 import com.sam.library.student.mapper.ClientMapper;
 import com.sam.library.student.service.ClientService;
-import com.sam.library.student.util.ApiResponse;
-import com.sam.library.student.util.PageResponse;
+import com.sam.library.student.common.ApiResponse;
+import com.sam.library.student.common.PageResponse;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,4 +1,4 @@
-package com.sam.library.student.util;
+package com.sam.library.student.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;

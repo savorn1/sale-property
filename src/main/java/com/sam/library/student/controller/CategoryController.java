@@ -17,8 +17,8 @@ import com.sam.library.student.dto.CategoryDTO;
 import com.sam.library.student.entity.Category;
 import com.sam.library.student.mapper.CateogoryMapper;
 import com.sam.library.student.service.CategoryService;
-import com.sam.library.student.util.ApiResponse;
-import com.sam.library.student.util.PageResponse;
+import com.sam.library.student.common.ApiResponse;
+import com.sam.library.student.common.PageResponse;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

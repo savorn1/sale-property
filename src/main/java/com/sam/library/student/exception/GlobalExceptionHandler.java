@@ -1,6 +1,6 @@
 package com.sam.library.student.exception;
 
-import com.sam.library.student.util.ApiResponse;
+import com.sam.library.student.common.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

@@ -5,8 +5,8 @@ import com.sam.library.student.dto.ProductDTO;
 import com.sam.library.student.entity.Product;
 import com.sam.library.student.mapper.ProductMapper;
 import com.sam.library.student.service.ProductService;
-import com.sam.library.student.util.ApiResponse;
-import com.sam.library.student.util.PageResponse;
+import com.sam.library.student.common.ApiResponse;
+import com.sam.library.student.common.PageResponse;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
