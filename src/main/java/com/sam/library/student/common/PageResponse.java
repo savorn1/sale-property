@@ -36,21 +36,21 @@ public class PageResponse<T> {
 
     public static class Metadata {
 
-        @JsonProperty("has_next")
+        @JsonProperty("hasNext")
         private boolean hasNext;
 
-        @JsonProperty("has_prev")
+        @JsonProperty("hasPrev")
         private boolean hasPrev;
 
-        @JsonProperty("total_page")
+        @JsonProperty("totalPage")
         private int totalPage;
 
-        @JsonProperty("current_page")
+        @JsonProperty("currentPage")
         private int currentPage;
 
         private int limit;
 
-        @JsonProperty("total_count")
+        @JsonProperty("totalCount")
         private long totalCount;
 
         public Metadata() {}

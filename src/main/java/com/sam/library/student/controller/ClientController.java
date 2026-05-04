@@ -20,6 +20,7 @@ import com.sam.library.student.mapper.ClientMapper;
 import com.sam.library.student.service.ClientService;
 import com.sam.library.student.common.ApiResponse;
 import com.sam.library.student.common.PageResponse;
+import com.sam.library.student.dto.CreateClientDTO;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,7 +53,7 @@ public class ClientController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ClientDTO>> createClient(@RequestBody ClientDTO dto) {
+    public ResponseEntity<ApiResponse<ClientDTO>> createClient(@RequestBody CreateClientDTO dto) {
         Client created = clientService.createClient(clientMapper.toClient(dto));
         return ResponseEntity.status(201).body(ApiResponse.success("Client created", clientMapper.toClientDTO(created)));
     }

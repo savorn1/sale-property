@@ -5,10 +5,10 @@ import java.util.UUID;
 
 public class ApiResponse<T> {
 
-    @JsonProperty("traceId")
+    //@JsonProperty("traceId")
     private String traceId;
 
-    @JsonProperty("status_code")
+    //@JsonProperty("statusCode")
     private int statusCode;
 
     private String message;
