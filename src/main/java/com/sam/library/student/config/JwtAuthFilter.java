@@ -1,27 +1,33 @@
 package com.sam.library.student.config;
 
-import com.sam.library.student.service.SysUserDetailsService;
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.sam.library.student.common.UserContext;
+import com.sam.library.student.dto.JwtUserClaims;
+import com.sam.library.student.redis.UserSessionStore;
 import com.sam.library.student.util.JwtUtil;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final SysUserDetailsService sysUserDetailsService;
+    private final UserSessionStore sessionStore;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -35,18 +41,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String username = jwtUtil.extractUsername(token);
+        UUID uuid = jwtUtil.extractUuid(token);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = sysUserDetailsService.loadUserByUsername(username);
-            if (jwtUtil.isTokenValid(token, userDetails.getUsername())) {
+        if (uuid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            JwtUserClaims claims = sessionStore.find(uuid);
+            if (claims != null) {
+                UserContext.set(claims.getId(), claims.getUuid());
+                List<SimpleGrantedAuthority> authorities = claims.getPermissions() == null
+                        ? List.of()
+                        : claims.getPermissions().stream()
+                                .map(SimpleGrantedAuthority::new)
+                                .toList();
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(
+                                claims.getUsername(),
+                                null,
+                                authorities);
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
-        chain.doFilter(request, response);
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            UserContext.clear();
+        }
     }
 }
