@@ -32,9 +32,11 @@ public class ClientController {
             @Parameter(description = "Page number, 1-based", example = "1")
             @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "Number of items per page", example = "10")
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Filter by name (partial match)")
+            @RequestParam(required = false) String name) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ClientDTO> result = clientService.getAllClients(pageable).map(clientMapper::toClientDTO);
+        Page<ClientDTO> result = clientService.getAllClients(name, pageable).map(clientMapper::toClientDTO);
         return ResponseEntity.ok(PageResponse.of(result));
     }
 

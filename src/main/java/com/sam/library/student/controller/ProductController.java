@@ -35,13 +35,15 @@ public class ProductController {
             @Parameter(description = "Page number, 1-based", example = "1")
             @RequestParam(defaultValue = "1") int page,
             @Parameter(description = "Number of items per page", example = "10")
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Filter by name (partial match)")
+            @RequestParam(required = false) String name) {
 
         Long userId = UserContext.getUserId();
         log.info("getAllProducts called by userId={}", userId);
 
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ProductDTO> result = productService.getAllProducts(pageable)
+        Page<ProductDTO> result = productService.getAllProducts(name, pageable)
                 .map(productMapper::toProductDTO);
         return ResponseEntity.ok(PageResponse.of(result));
     }

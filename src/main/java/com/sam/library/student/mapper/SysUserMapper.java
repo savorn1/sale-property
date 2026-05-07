@@ -4,6 +4,9 @@ import com.sam.library.student.dto.SysUserDTO;
 import com.sam.library.student.entity.SysUser;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.stream.Collectors;
+
 @Component
 public class SysUserMapper {
 
@@ -11,8 +14,9 @@ public class SysUserMapper {
         SysUserDTO dto = new SysUserDTO();
         dto.setId(sysUser.getId());
         dto.setName(sysUser.getName());
-        dto.setPassword(sysUser.getPassword());
         dto.setStatus(sysUser.getStatus());
+        dto.setRoleIds(sysUser.getRoles() == null ? Collections.emptyList() :
+                sysUser.getRoles().stream().map(r -> r.getId()).collect(Collectors.toList()));
         return dto;
     }
 

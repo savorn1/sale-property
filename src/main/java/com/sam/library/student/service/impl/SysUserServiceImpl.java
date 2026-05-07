@@ -1,8 +1,10 @@
 package com.sam.library.student.service.impl;
 
 import com.sam.library.student.dto.SysUserFilterRequest;
+import com.sam.library.student.entity.Role;
 import com.sam.library.student.entity.SysUser;
 import com.sam.library.student.exception.ResourceNotFoundException;
+import com.sam.library.student.repository.RoleRepository;
 import com.sam.library.student.repository.SysUserRepository;
 import com.sam.library.student.service.SysUserService;
 import lombok.RequiredArgsConstructor;
@@ -11,16 +13,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import com.sam.library.student.util.PasswordUtil;
 import org.springframework.stereotype.Service;
+import org.hibernate.Hibernate;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SysUserServiceImpl implements SysUserService {
     private final SysUserRepository sysUserRepository;
+    private final RoleRepository roleRepository;
     private final PasswordUtil passwordUtil;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<SysUser> getAllSysUsers(SysUserFilterRequest filter, Pageable pageable) {
         Specification<SysUser> spec = Specification.where(null);
 
@@ -44,12 +51,14 @@ public class SysUserServiceImpl implements SysUserService {
                     cb.lessThanOrEqualTo(root.get("createdAt"), filter.getEndDate().atTime(23, 59, 59)));
         }
 
-        return sysUserRepository.findAll(spec, pageable);
+        Page<SysUser> result = sysUserRepository.findAll(spec, pageable);
+        result.getContent().forEach(u -> Hibernate.initialize(u.getRoles()));
+        return result;
     }
 
     @Override
     public SysUser getSysUserById(Long id) {
-        return sysUserRepository.findById(id)
+        return sysUserRepository.findWithRolesById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("SysUser", id));
     }
 
@@ -97,6 +106,16 @@ public class SysUserServiceImpl implements SysUserService {
                 .orElseThrow(() -> new ResourceNotFoundException("SysUser", id));
         sysUserRepository.delete(existing);
         return "SysUser with id " + id + " has been deleted successfully.";
+    }
+
+    @Override
+    @Transactional
+    public SysUser assignRoles(Long id, List<Long> roleIds) {
+        SysUser user = sysUserRepository.findWithRolesById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("SysUser", id));
+        List<Role> roles = roleRepository.findAllById(roleIds);
+        user.setRoles(new HashSet<>(roles));
+        return sysUserRepository.save(user);
     }
 
     @Override

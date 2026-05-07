@@ -69,4 +69,11 @@ public class SysUserController {
     public ResponseEntity<ApiResponse<String>> deleteSysUsers(@RequestBody List<Long> ids) {
         return ResponseEntity.ok(ApiResponse.success(sysUserService.deleteSysUsers(ids)));
     }
+
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
+    @PutMapping("/{id}/roles")
+    public ResponseEntity<ApiResponse<SysUserDTO>> assignRoles(@PathVariable Long id, @RequestBody List<Long> roleIds) {
+        return ResponseEntity.ok(ApiResponse.success("Roles assigned",
+                sysUserMapper.toSysUserDTO(sysUserService.assignRoles(id, roleIds))));
+    }
 }

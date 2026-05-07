@@ -10,6 +10,7 @@ import com.sam.library.student.entity.Category;
 public interface CategoryService {
         List<Category> getAllCategories();
         Page<Category> getAllCategories(Pageable pageable);
+        Page<Category> getAllCategories(String name, Pageable pageable);
         Category getCategoryById(Long id);
         Category createCategory(Category category);
         Category updateCategory(Long id, Category category);

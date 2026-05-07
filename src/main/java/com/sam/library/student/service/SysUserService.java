@@ -14,4 +14,5 @@ public interface SysUserService {
     SysUser updateSysUser(Long id, SysUser sysUser);
     String deleteSysUser(Long id);
     String deleteSysUsers(List<Long> ids);
+    SysUser assignRoles(Long id, List<Long> roleIds);
 }

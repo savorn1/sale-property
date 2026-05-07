@@ -10,6 +10,7 @@ import com.sam.library.student.entity.Client;
 public interface  ClientService {
     List<Client> getAllClients();
     Page<Client> getAllClients(Pageable pageable);
+    Page<Client> getAllClients(String name, Pageable pageable);
     Client getClientById(Long id);
     Client createClient(Client client);
     Client updateClient(Long id, Client client);

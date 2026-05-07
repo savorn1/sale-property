@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.sam.library.student.entity.Category;
@@ -24,6 +25,16 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Page<Category> getAllCategories(Pageable pageable) {
+        return categoryRepository.findAll(pageable);
+    }
+
+    @Override
+    public Page<Category> getAllCategories(String name, Pageable pageable) {
+        if (name != null && !name.isBlank()) {
+            Specification<Category> spec = (root, query, cb) ->
+                cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+            return categoryRepository.findAll(spec, pageable);
+        }
         return categoryRepository.findAll(pageable);
     }
 

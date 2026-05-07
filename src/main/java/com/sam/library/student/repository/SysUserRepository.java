@@ -12,4 +12,7 @@ public interface SysUserRepository extends JpaRepository<SysUser, Long>, JpaSpec
 
     @EntityGraph(attributePaths = {"roles", "roles.permissions"})
     Optional<SysUser> findWithRolesByName(String name);
+
+    @EntityGraph(attributePaths = {"roles"})
+    Optional<SysUser> findWithRolesById(Long id);
 }

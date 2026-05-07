@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.sam.library.student.entity.Client;
@@ -28,6 +29,16 @@ public class ClientServiceImpl implements  ClientService {
     }
 
     @Override
+    public Page<Client> getAllClients(String name, Pageable pageable) {
+        if (name != null && !name.isBlank()) {
+            Specification<Client> spec = (root, query, cb) ->
+                cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+            return clientRepository.findAll(spec, pageable);
+        }
+        return clientRepository.findAll(pageable);
+    }
+
+    @Override
     public Client getClientById(Long id) {
         return clientRepository.findById(id).orElse(null);
     }
@@ -47,6 +58,8 @@ public class ClientServiceImpl implements  ClientService {
         existingClient.setName(client.getName());
         existingClient.setEmail(client.getEmail());
         existingClient.setPhone(client.getPhone());
+        existingClient.setGender(client.getGender());
+        existingClient.setAddress(client.getAddress());
         return clientRepository.save(existingClient);
     }
 
