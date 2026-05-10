@@ -12,7 +12,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +28,18 @@ public class RolePermissionSeeder implements CommandLineRunner {
     private final RoleRepository roleRepository;
     private final SysUserRepository sysUserRepository;
 
+    // ─── Add a new module here to auto-generate its READ/CREATE/UPDATE/DELETE permissions ──
+    private static final List<String> MODULES = List.of(
+        "STUDENT", "PRODUCT", "BRAND", "CATEGORY",
+        "CLIENT", "SUPPLIER", "USER", "ROLE", "PERMISSION", "ORDER"
+    );
+
+    private static final String[] CRUD = {"READ", "CREATE", "UPDATE", "DELETE"};
+
+    private static final Map<String, String> ACTION_LABEL = Map.of(
+        "READ", "View", "CREATE", "Create", "UPDATE", "Update", "DELETE", "Delete"
+    );
+
     @Override
     @Transactional
     public void run(String... args) {
@@ -36,63 +48,32 @@ public class RolePermissionSeeder implements CommandLineRunner {
         seedUserRoles();
     }
 
-    // ─── Permissions ────────────────────────────────────────────────────────────
+    // ─── Permissions ─────────────────────────────────────────────────────────────
 
     private void seedPermissions() {
-        if (permissionRepository.count() > 0) return;
+        // Load existing names so only missing permissions are inserted on each startup.
+        // This means adding a module to the MODULES list above is enough to seed it.
+        Set<String> existing = permissionRepository.findAll().stream()
+                .map(Permission::getName)
+                .collect(Collectors.toSet());
 
-        List<Permission> permissions = Arrays.asList(
-            // Student
-            perm("STUDENT_READ",       "READ",   "View students",          "STUDENT"),
-            perm("STUDENT_CREATE",     "CREATE", "Create student",         "STUDENT"),
-            perm("STUDENT_UPDATE",     "UPDATE", "Update student",         "STUDENT"),
-            perm("STUDENT_DELETE",     "DELETE", "Delete student",         "STUDENT"),
-            // Product
-            perm("PRODUCT_READ",       "READ",   "View products",          "PRODUCT"),
-            perm("PRODUCT_CREATE",     "CREATE", "Create product",         "PRODUCT"),
-            perm("PRODUCT_UPDATE",     "UPDATE", "Update product",         "PRODUCT"),
-            perm("PRODUCT_DELETE",     "DELETE", "Delete product",         "PRODUCT"),
-            // Brand
-            perm("BRAND_READ",         "READ",   "View brands",            "BRAND"),
-            perm("BRAND_CREATE",       "CREATE", "Create brand",           "BRAND"),
-            perm("BRAND_UPDATE",       "UPDATE", "Update brand",           "BRAND"),
-            perm("BRAND_DELETE",       "DELETE", "Delete brand",           "BRAND"),
-            // Category
-            perm("CATEGORY_READ",      "READ",   "View categories",        "CATEGORY"),
-            perm("CATEGORY_CREATE",    "CREATE", "Create category",        "CATEGORY"),
-            perm("CATEGORY_UPDATE",    "UPDATE", "Update category",        "CATEGORY"),
-            perm("CATEGORY_DELETE",    "DELETE", "Delete category",        "CATEGORY"),
-            // Client
-            perm("CLIENT_READ",        "READ",   "View clients",           "CLIENT"),
-            perm("CLIENT_CREATE",      "CREATE", "Create client",          "CLIENT"),
-            perm("CLIENT_UPDATE",      "UPDATE", "Update client",          "CLIENT"),
-            perm("CLIENT_DELETE",      "DELETE", "Delete client",          "CLIENT"),
-            // Supplier
-            perm("SUPPLIER_READ",      "READ",   "View suppliers",         "SUPPLIER"),
-            perm("SUPPLIER_CREATE",    "CREATE", "Create supplier",        "SUPPLIER"),
-            perm("SUPPLIER_UPDATE",    "UPDATE", "Update supplier",        "SUPPLIER"),
-            perm("SUPPLIER_DELETE",    "DELETE", "Delete supplier",        "SUPPLIER"),
-            // User management
-            perm("USER_READ",          "READ",   "View users",             "USER"),
-            perm("USER_CREATE",        "CREATE", "Create user",            "USER"),
-            perm("USER_UPDATE",        "UPDATE", "Update user",            "USER"),
-            perm("USER_DELETE",        "DELETE", "Delete user",            "USER"),
-            // Role management
-            perm("ROLE_READ",          "READ",   "View roles",             "ROLE"),
-            perm("ROLE_CREATE",        "CREATE", "Create role",            "ROLE"),
-            perm("ROLE_UPDATE",        "UPDATE", "Update role",            "ROLE"),
-            perm("ROLE_DELETE",        "DELETE", "Delete role",            "ROLE"),
-            // Permission management
-            perm("PERMISSION_READ",    "READ",   "View permissions",       "PERMISSION"),
-            perm("PERMISSION_CREATE",  "CREATE", "Create permission",      "PERMISSION"),
-            perm("PERMISSION_UPDATE",  "UPDATE", "Update permission",      "PERMISSION"),
-            perm("PERMISSION_DELETE",  "DELETE", "Delete permission",      "PERMISSION")
-        );
-
-        permissionRepository.saveAll(permissions);
+        List<Permission> toSave = new ArrayList<>();
+        for (String module : MODULES) {
+            String moduleLabel = module.charAt(0) + module.substring(1).toLowerCase();
+            for (String action : CRUD) {
+                String name = module + "_" + action;
+                if (!existing.contains(name)) {
+                    String desc = ACTION_LABEL.get(action) + " " + moduleLabel;
+                    toSave.add(perm(name, action, desc, module));
+                }
+            }
+        }
+        if (!toSave.isEmpty()) {
+            permissionRepository.saveAll(toSave);
+        }
     }
 
-    // ─── Roles + role_permission ─────────────────────────────────────────────────
+    // ─── Roles ───────────────────────────────────────────────────────────────────
 
     private void seedRoles() {
         if (roleRepository.count() > 0) return;
@@ -100,45 +81,42 @@ public class RolePermissionSeeder implements CommandLineRunner {
         Map<String, Permission> all = permissionRepository.findAll().stream()
                 .collect(Collectors.toMap(Permission::getName, p -> p));
 
-        // ADMIN — full access
-        Role admin = role("Administrator", "ADMIN", false,
-                "Full system access", all.values());
+        // ADMIN — full CRUD on every module
+        Role admin = role("Administrator", "ADMIN", false, "Full system access",
+                perms(all, MODULES.toArray(String[]::new)));
 
-        // MANAGER — everything except user/role/permission management
-        Role manager = role("Manager", "MANAGER", false,
-                "Manage business data",
-                pick(all,
-                        "STUDENT_READ", "STUDENT_CREATE", "STUDENT_UPDATE", "STUDENT_DELETE",
-                        "PRODUCT_READ", "PRODUCT_CREATE", "PRODUCT_UPDATE", "PRODUCT_DELETE",
-                        "BRAND_READ",   "BRAND_CREATE",   "BRAND_UPDATE",   "BRAND_DELETE",
-                        "CATEGORY_READ","CATEGORY_CREATE","CATEGORY_UPDATE","CATEGORY_DELETE",
-                        "CLIENT_READ",  "CLIENT_CREATE",  "CLIENT_UPDATE",  "CLIENT_DELETE",
-                        "SUPPLIER_READ","SUPPLIER_CREATE","SUPPLIER_UPDATE","SUPPLIER_DELETE"
-                ));
+        // MANAGER — full CRUD on business modules (no user/role/permission management)
+        Role manager = role("Manager", "MANAGER", false, "Manage business data",
+                perms(all, "STUDENT", "PRODUCT", "BRAND", "CATEGORY",
+                           "CLIENT", "SUPPLIER", "ORDER"));
 
-        // STAFF — default role, read + limited create/update on core modules
-        Role staff = role("Staff", "STAFF", true,
-                "Day-to-day operations",
-                pick(all,
-                        "STUDENT_READ", "STUDENT_CREATE", "STUDENT_UPDATE",
-                        "PRODUCT_READ", "PRODUCT_CREATE", "PRODUCT_UPDATE",
-                        "BRAND_READ",   "CATEGORY_READ",
-                        "CLIENT_READ",  "CLIENT_CREATE",
-                        "SUPPLIER_READ"
+        // STAFF — default role, limited write access on core modules
+        Role staff = role("Staff", "STAFF", true, "Day-to-day operations",
+                permsOf(all,
+                    module("STUDENT",  "READ", "CREATE", "UPDATE"),
+                    module("PRODUCT",  "READ", "CREATE", "UPDATE"),
+                    module("BRAND",    "READ"),
+                    module("CATEGORY", "READ"),
+                    module("CLIENT",   "READ", "CREATE"),
+                    module("SUPPLIER", "READ"),
+                    module("ORDER",    "READ", "CREATE")
                 ));
 
         // GUEST — read-only across all business modules
-        Role guest = role("Guest", "GUEST", false,
-                "Read-only access",
-                pick(all,
-                        "STUDENT_READ",  "PRODUCT_READ", "BRAND_READ",
-                        "CATEGORY_READ", "CLIENT_READ",  "SUPPLIER_READ"
+        Role guest = role("Guest", "GUEST", false, "Read-only access",
+                permsOf(all,
+                    module("STUDENT",  "READ"),
+                    module("PRODUCT",  "READ"),
+                    module("BRAND",    "READ"),
+                    module("CATEGORY", "READ"),
+                    module("CLIENT",   "READ"),
+                    module("SUPPLIER", "READ")
                 ));
 
         roleRepository.saveAll(List.of(admin, manager, staff, guest));
     }
 
-    // ─── user_role ───────────────────────────────────────────────────────────────
+    // ─── User roles ──────────────────────────────────────────────────────────────
 
     private void seedUserRoles() {
         List<SysUser> users = sysUserRepository.findAll();
@@ -146,7 +124,6 @@ public class RolePermissionSeeder implements CommandLineRunner {
 
         Map<String, SysUser> userMap = users.stream()
                 .collect(Collectors.toMap(SysUser::getName, u -> u));
-
         Map<String, Role> roleMap = roleRepository.findAll().stream()
                 .collect(Collectors.toMap(Role::getCode, r -> r));
 
@@ -160,6 +137,39 @@ public class RolePermissionSeeder implements CommandLineRunner {
 
     // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+    /** All CRUD permissions for each of the listed modules. */
+    private Set<Permission> perms(Map<String, Permission> all, String... modules) {
+        Set<Permission> result = new HashSet<>();
+        for (String module : modules) {
+            for (String action : CRUD) {
+                Permission p = all.get(module + "_" + action);
+                if (p != null) result.add(p);
+            }
+        }
+        return result;
+    }
+
+    /** Bundles a module name with its allowed actions for use in {@link #permsOf}. */
+    private String[] module(String module, String... actions) {
+        String[] entry = new String[actions.length + 1];
+        entry[0] = module;
+        System.arraycopy(actions, 0, entry, 1, actions.length);
+        return entry;
+    }
+
+    /** Specific action subsets per module. Each entry is built with {@link #module}. */
+    private Set<Permission> permsOf(Map<String, Permission> all, String[]... moduleActions) {
+        Set<Permission> result = new HashSet<>();
+        for (String[] entry : moduleActions) {
+            String module = entry[0];
+            for (int i = 1; i < entry.length; i++) {
+                Permission p = all.get(module + "_" + entry[i]);
+                if (p != null) result.add(p);
+            }
+        }
+        return result;
+    }
+
     private Permission perm(String name, String action, String description, String module) {
         Permission p = new Permission();
         p.setName(name);
@@ -170,22 +180,14 @@ public class RolePermissionSeeder implements CommandLineRunner {
     }
 
     private Role role(String name, String code, boolean isDefault, String description,
-                      Iterable<Permission> permissions) {
+                      Set<Permission> permissions) {
         Role r = new Role();
         r.setName(name);
         r.setCode(code);
         r.setDefault(isDefault);
         r.setDescription(description);
-        Set<Permission> set = new HashSet<>();
-        permissions.forEach(set::add);
-        r.setPermissions(set);
+        r.setPermissions(permissions);
         return r;
-    }
-
-    private Set<Permission> pick(Map<String, Permission> all, String... names) {
-        return Arrays.stream(names)
-                .map(all::get)
-                .collect(Collectors.toSet());
     }
 
     private void assign(Map<String, SysUser> users, Map<String, Role> roles,
