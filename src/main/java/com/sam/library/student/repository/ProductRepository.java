@@ -21,7 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             SET p.name = :name,
                 p.description = :description,
                 p.price = :price,
-                p.brand = :brand
+                p.brand = :brand,
+                p.imageUrl = :imageUrl
             WHERE p.id = :id
             """)
     int updateProductDetails(
@@ -29,6 +30,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             @Param("name") String name,
             @Param("description") String description,
             @Param("price") Double price,
-            @Param("brand") com.sam.library.student.entity.Brand brand
+            @Param("brand") com.sam.library.student.entity.Brand brand,
+            @Param("imageUrl") String imageUrl
     );
 }

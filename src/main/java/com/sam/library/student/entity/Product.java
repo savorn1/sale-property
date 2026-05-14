@@ -22,6 +22,9 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private Double price = 0.0;
 
+    @Column
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     private Brand brand;

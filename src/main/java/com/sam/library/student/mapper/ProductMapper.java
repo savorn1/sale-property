@@ -16,6 +16,7 @@ public class ProductMapper {
         dto.setName(p.getName());
         dto.setDescription(p.getDescription());
         dto.setPrice(p.getPrice());
+        dto.setImageUrl(p.getImageUrl());
         if (p.getBrand() != null) {
             dto.setBrandId(p.getBrand().getId());
             dto.setBrandName(p.getBrand().getName());
@@ -40,6 +41,7 @@ public class ProductMapper {
         product.setName(dto.getName());
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
+        product.setImageUrl(dto.getImageUrl());
         return product;
     }
 }

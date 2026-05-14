@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -52,7 +53,6 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product createProduct(Product product, Long categoryId, Long brandId) {
-
         String name = product.getName();
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Product name cannot be null or empty.");
@@ -87,7 +87,8 @@ public class ProductServiceImpl implements ProductService {
                 product.getName(),
                 product.getDescription(),
                 product.getPrice(),
-                brand);
+                brand,
+                product.getImageUrl());
         if (updated == 0) throw new ResourceNotFoundException("Product", id);
         return "Product updated successfully.";
     }
@@ -104,5 +105,4 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", name));
     }
-
 }

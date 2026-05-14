@@ -8,5 +8,5 @@ public class CreateProductDTO {
     private Double price;
     private Long brandId;
     private Long categoryId;
-
+    private String imageUrl;
 }

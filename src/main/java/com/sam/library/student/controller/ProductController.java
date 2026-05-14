@@ -82,4 +82,5 @@ public class ProductController {
         Product product = productService.getProductByName(name);
         return ResponseEntity.ok(ApiResponse.success(productMapper.toProductDTO(product)));
     }
+
 }
