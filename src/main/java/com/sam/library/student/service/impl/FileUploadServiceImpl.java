@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.s3.model.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,13 @@ public class FileUploadServiceImpl implements FileUploadService {
             throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
         }
         return endpoint + "/" + bucket + "/" + key;
+    }
+
+    @Override
+    public List<String> uploadMultiple(List<MultipartFile> files) {
+        return files.stream()
+                .map(this::upload)
+                .collect(Collectors.toList());
     }
 
     @Override

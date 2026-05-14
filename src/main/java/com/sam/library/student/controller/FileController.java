@@ -33,6 +33,12 @@ public class FileController {
         return ResponseEntity.status(201).body(ApiResponse.success("File uploaded", url));
     }
 
+    @PostMapping(value = "/upload/multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<List<String>>> uploadMultiple(@RequestParam List<MultipartFile> files) {
+        List<String> urls = fileUploadService.uploadMultiple(files);
+        return ResponseEntity.status(201).body(ApiResponse.success("Files uploaded", urls));
+    }
+
     @DeleteMapping("/{fileName}")
     public ResponseEntity<ApiResponse<String>> delete(@PathVariable String fileName) {
         fileUploadService.delete(fileName);

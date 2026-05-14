@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface FileUploadService {
     String upload(MultipartFile file);
+    List<String> uploadMultiple(List<MultipartFile> files);
     void delete(String fileName);
     List<String> listFiles();
 }
