@@ -1,7 +1,20 @@
 package com.sam.library.student.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.sam.library.student.dto.CreateOrderDTO;
 import com.sam.library.student.dto.CreateOrderDetailDTO;
+import com.sam.library.student.dto.UpdateOrderStatusDTO;
+import com.sam.library.student.dto.UpdatePaymentStatusDTO;
 import com.sam.library.student.entity.Client;
 import com.sam.library.student.entity.Order;
 import com.sam.library.student.entity.OrderDetail;
@@ -11,17 +24,8 @@ import com.sam.library.student.repository.ClientRepository;
 import com.sam.library.student.repository.OrderRepository;
 import com.sam.library.student.repository.ProductRepository;
 import com.sam.library.student.service.OrderService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +92,28 @@ public class OrderServiceImpl implements OrderService {
         order.setSubtotal(subtotal);
         order.setTotal(subtotal.subtract(order.getDiscount()).add(order.getTax()));
 
+        return orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public Order updateOrderStatus(Long id, UpdateOrderStatusDTO dto) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", id));
+        if (dto.getStatus() != null) {
+            order.setStatus(dto.getStatus().name());
+        }
+        return orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public Order updatePaymentStatus(Long id, UpdatePaymentStatusDTO dto) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", id));
+        if (dto.getPaymentStatus() != null) {
+            order.setPaymentStatus(dto.getPaymentStatus().name());
+        }
         return orderRepository.save(order);
     }
 

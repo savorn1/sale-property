@@ -1,5 +1,6 @@
 package com.sam.library.student.controller;
 
+import com.sam.library.student.annotation.RateLimit;
 import com.sam.library.student.common.ApiResponse;
 import com.sam.library.student.dto.JwtUserClaims;
 import com.sam.library.student.dto.LoginRequest;
@@ -23,6 +24,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
+    @RateLimit(max = 5, window = 60)
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(ApiResponse.success(authService.login(request)));
     }

@@ -4,6 +4,8 @@ import com.sam.library.student.common.ApiResponse;
 import com.sam.library.student.common.PageResponse;
 import com.sam.library.student.dto.CreateOrderDTO;
 import com.sam.library.student.dto.OrderDTO;
+import com.sam.library.student.dto.UpdateOrderStatusDTO;
+import com.sam.library.student.dto.UpdatePaymentStatusDTO;
 import com.sam.library.student.entity.Order;
 import com.sam.library.student.mapper.OrderMapper;
 import com.sam.library.student.service.OrderService;
@@ -53,6 +55,24 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderDTO>> createOrder(@RequestBody CreateOrderDTO dto) {
         Order order = orderService.createOrder(dto);
         return ResponseEntity.status(201).body(ApiResponse.success("Order created", orderMapper.toOrderDTO(order)));
+    }
+
+    @PreAuthorize("hasAuthority('ORDER_UPDATE')")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<OrderDTO>> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestBody UpdateOrderStatusDTO dto) {
+        Order order = orderService.updateOrderStatus(id, dto);
+        return ResponseEntity.ok(ApiResponse.success("Order status updated", orderMapper.toOrderDTO(order)));
+    }
+
+    @PreAuthorize("hasAuthority('ORDER_UPDATE')")
+    @PatchMapping("/{id}/payment-status")
+    public ResponseEntity<ApiResponse<OrderDTO>> updatePaymentStatus(
+            @PathVariable Long id,
+            @RequestBody UpdatePaymentStatusDTO dto) {
+        Order order = orderService.updatePaymentStatus(id, dto);
+        return ResponseEntity.ok(ApiResponse.success("Payment status updated", orderMapper.toOrderDTO(order)));
     }
 
     @PreAuthorize("hasAuthority('ORDER_DELETE')")
