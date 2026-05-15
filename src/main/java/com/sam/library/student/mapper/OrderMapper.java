@@ -2,15 +2,20 @@ package com.sam.library.student.mapper;
 
 import com.sam.library.student.dto.OrderDTO;
 import com.sam.library.student.dto.OrderDetailDTO;
+import com.sam.library.student.dto.PaymentDTO;
 import com.sam.library.student.entity.Order;
 import com.sam.library.student.entity.OrderDetail;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class OrderMapper {
+
+    private final PaymentMapper paymentMapper;
 
     public OrderDTO toOrderDTO(Order order) {
         OrderDTO dto = new OrderDTO();
@@ -30,6 +35,10 @@ public class OrderMapper {
                 .map(this::toDetailDTO)
                 .collect(Collectors.toList());
         dto.setDetails(details);
+        List<PaymentDTO> payments = order.getPayments().stream()
+                .map(paymentMapper::toPaymentDTO)
+                .collect(Collectors.toList());
+        dto.setPayments(payments);
         return dto;
     }
 

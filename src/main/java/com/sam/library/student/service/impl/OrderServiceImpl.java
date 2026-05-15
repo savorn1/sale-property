@@ -19,12 +19,14 @@ import com.sam.library.student.dto.UpdatePaymentStatusDTO;
 import com.sam.library.student.entity.Client;
 import com.sam.library.student.entity.Order;
 import com.sam.library.student.entity.OrderDetail;
+import com.sam.library.student.entity.Payment;
 import com.sam.library.student.entity.Product;
 import com.sam.library.student.enums.OrderStatus;
 import com.sam.library.student.enums.PaymentStatus;
 import com.sam.library.student.exception.ResourceNotFoundException;
 import com.sam.library.student.repository.ClientRepository;
 import com.sam.library.student.repository.OrderRepository;
+import com.sam.library.student.repository.PaymentRepository;
 import com.sam.library.student.repository.ProductRepository;
 import com.sam.library.student.service.OrderService;
 
@@ -37,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ClientRepository clientRepository;
     private final ProductRepository productRepository;
+    private final PaymentRepository paymentRepository;
 
     @Override
     public Page<Order> getAllOrders(String q, List<OrderStatus> status, List<PaymentStatus> paymentStatus, Pageable pageable) {
@@ -107,7 +110,16 @@ public class OrderServiceImpl implements OrderService {
         order.setSubtotal(subtotal);
         order.setTotal(subtotal.subtract(order.getDiscount()).add(order.getTax()));
 
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+
+        Payment payment = new Payment();
+        payment.setPaymentNo(generatePaymentNo());
+        payment.setOrder(savedOrder);
+        payment.setAmount(savedOrder.getTotal());
+        payment.setStatus(PaymentStatus.UNPAID.name());
+        paymentRepository.save(payment);
+
+        return savedOrder;
     }
 
     @Override
@@ -145,5 +157,11 @@ public class OrderServiceImpl implements OrderService {
         String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String uniquePart = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         return "ORD-" + datePart + "-" + uniquePart;
+    }
+
+    private String generatePaymentNo() {
+        String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String uniquePart = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        return "PAY-" + datePart + "-" + uniquePart;
     }
 }

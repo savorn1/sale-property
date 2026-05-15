@@ -20,4 +20,5 @@ public class OrderDTO {
     private String paymentStatus;
     private String remark;
     private List<OrderDetailDTO> details;
+    private List<PaymentDTO> payments;
 }
