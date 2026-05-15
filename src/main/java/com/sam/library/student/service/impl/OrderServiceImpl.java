@@ -3,6 +3,7 @@ package com.sam.library.student.service.impl;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -19,6 +20,8 @@ import com.sam.library.student.entity.Client;
 import com.sam.library.student.entity.Order;
 import com.sam.library.student.entity.OrderDetail;
 import com.sam.library.student.entity.Product;
+import com.sam.library.student.enums.OrderStatus;
+import com.sam.library.student.enums.PaymentStatus;
 import com.sam.library.student.exception.ResourceNotFoundException;
 import com.sam.library.student.repository.ClientRepository;
 import com.sam.library.student.repository.OrderRepository;
@@ -36,16 +39,28 @@ public class OrderServiceImpl implements OrderService {
     private final ProductRepository productRepository;
 
     @Override
-    public Page<Order> getAllOrders(String q, Pageable pageable) {
+    public Page<Order> getAllOrders(String q, List<OrderStatus> status, List<PaymentStatus> paymentStatus, Pageable pageable) {
+        Specification<Order> spec = Specification.where(null);
+
         if (q != null && !q.isBlank()) {
-            Specification<Order> spec = (root, query, cb) ->
-                    cb.or(
-                            cb.like(cb.lower(root.get("orderNo")), "%" + q.toLowerCase() + "%"),
-                            cb.like(cb.lower(root.join("client").get("name")), "%" + q.toLowerCase() + "%")
-                    );
-            return orderRepository.findAll(spec, pageable);
+            String pattern = "%" + q.toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("orderNo")), pattern),
+                    cb.like(cb.lower(root.join("client").get("name")), pattern)
+            ));
         }
-        return orderRepository.findAll(pageable);
+
+        if (status != null && !status.isEmpty()) {
+            List<String> statusNames = status.stream().map(Enum::name).toList();
+            spec = spec.and((root, query, cb) -> root.get("status").in(statusNames));
+        }
+
+        if (paymentStatus != null && !paymentStatus.isEmpty()) {
+            List<String> paymentStatusNames = paymentStatus.stream().map(Enum::name).toList();
+            spec = spec.and((root, query, cb) -> root.get("paymentStatus").in(paymentStatusNames));
+        }
+
+        return orderRepository.findAll(spec, pageable);
     }
 
     @Override

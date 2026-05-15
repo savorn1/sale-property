@@ -1,5 +1,23 @@
 package com.sam.library.student.controller;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.sam.library.student.common.ApiResponse;
 import com.sam.library.student.common.PageResponse;
 import com.sam.library.student.dto.CreateOrderDTO;
@@ -7,18 +25,14 @@ import com.sam.library.student.dto.OrderDTO;
 import com.sam.library.student.dto.UpdateOrderStatusDTO;
 import com.sam.library.student.dto.UpdatePaymentStatusDTO;
 import com.sam.library.student.entity.Order;
+import com.sam.library.student.enums.OrderStatus;
+import com.sam.library.student.enums.PaymentStatus;
 import com.sam.library.student.mapper.OrderMapper;
 import com.sam.library.student.service.OrderService;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/order")
@@ -37,9 +51,13 @@ public class OrderController {
             @Parameter(description = "Number of items per page", example = "10")
             @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Search by order no or client name")
-            @RequestParam(required = false) String q) {
+            @RequestParam(required = false) String q,
+            @Parameter(description = "Filter by order status (multiple allowed)")
+            @RequestParam(required = false) List<OrderStatus> status,
+            @Parameter(description = "Filter by payment status (multiple allowed)")
+            @RequestParam(required = false) List<PaymentStatus> paymentStatus) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<OrderDTO> result = orderService.getAllOrders(q, pageable).map(orderMapper::toOrderDTO);
+        Page<OrderDTO> result = orderService.getAllOrders(q, status, paymentStatus, pageable).map(orderMapper::toOrderDTO);
         return ResponseEntity.ok(PageResponse.of(result));
     }
 

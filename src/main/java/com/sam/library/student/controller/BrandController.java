@@ -1,22 +1,32 @@
 package com.sam.library.student.controller;
 
-import com.sam.library.student.common.ApiResponse;
-import com.sam.library.student.common.PageResponse;
-import com.sam.library.student.dto.BrandDTO;
-import com.sam.library.student.dto.BrandFilterRequest;
-import com.sam.library.student.mapper.BrandMapper;
-import com.sam.library.student.service.BrandService;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.sam.library.student.common.ApiResponse;
+import com.sam.library.student.common.PageResponse;
+import com.sam.library.student.dto.BrandDTO;
+import com.sam.library.student.dto.BrandFilterRequest;
+import com.sam.library.student.mapper.BrandMapper;
+import com.sam.library.student.service.BrandService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("api/brand")
@@ -49,6 +59,13 @@ public class BrandController {
     public ResponseEntity<ApiResponse<BrandDTO>> createBrand(@RequestBody BrandDTO dto) {
         return ResponseEntity.status(201).body(ApiResponse.success("Brand created",
                 brandMapper.toBrandDTO(brandService.createBrand(brandMapper.toBrand(dto)))));
+    }
+
+    @PreAuthorize("hasAuthority('BRAND_UPDATE')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<BrandDTO>> updateBrand(@PathVariable Long id, @RequestBody BrandDTO dto) {
+        return ResponseEntity.ok(ApiResponse.success(
+                brandMapper.toBrandDTO(brandService.updateBrand(id, brandMapper.toBrand(dto)))));
     }
 
     @PreAuthorize("hasAuthority('BRAND_DELETE')")
