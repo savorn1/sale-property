@@ -1,5 +1,7 @@
 package com.sam.library.student.aop;
 
+import java.util.Arrays;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
@@ -9,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-
 @Aspect
 @Component
 public class LoggingAspect {
@@ -18,7 +18,9 @@ public class LoggingAspect {
     private static final Logger log = LoggerFactory.getLogger(LoggingAspect.class);
 
     @Around("execution(* com.sam.library.student.controller..*(..)) || " +
-            "execution(* com.sam.library.student.service.impl..*(..))")
+            "execution(* com.sam.library.student.service.impl..*(..)) || " +
+            "execution(* com.sam.library.student.scheduler..*(..)) || " +
+            "execution(* com.sam.library.student.websocket..*(..))")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature sig = (MethodSignature) joinPoint.getSignature();
         String className = sig.getDeclaringType().getSimpleName();
@@ -37,7 +39,9 @@ public class LoggingAspect {
 
     @AfterThrowing(
             pointcut = "execution(* com.sam.library.student.controller..*(..)) || " +
-                       "execution(* com.sam.library.student.service.impl..*(..))",
+                       "execution(* com.sam.library.student.service.impl..*(..)) || " +
+                       "execution(* com.sam.library.student.scheduler..*(..)) || " +
+                       "execution(* com.sam.library.student.websocket..*(..))",
             throwing = "ex"
     )
     public void logException(org.aspectj.lang.JoinPoint joinPoint, Throwable ex) {
@@ -53,6 +57,8 @@ public class LoggingAspect {
     private static String layer(String className) {
         if (className.endsWith("Controller")) return "CONTROLLER";
         if (className.endsWith("ServiceImpl")) return "SERVICE";
+        if (className.endsWith("Scheduler")) return "SCHEDULER";
+        if (className.endsWith("Subscriber") || className.endsWith("Handler")) return "WEBSOCKET";
         return "APP";
     }
 }

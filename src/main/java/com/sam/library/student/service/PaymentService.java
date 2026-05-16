@@ -13,4 +13,5 @@ public interface PaymentService {
     Payment createPayment(CreatePaymentDTO dto);
     Payment updatePaymentStatus(Long id, UpdatePaymentStatusDTO dto);
     void deletePayment(Long id);
+    void autoMarkExpiredPaymentsAsPaid();
 }

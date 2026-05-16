@@ -1,5 +1,20 @@
 package com.sam.library.student.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sam.library.student.dto.CreatePaymentDTO;
 import com.sam.library.student.dto.UpdatePaymentStatusDTO;
 import com.sam.library.student.entity.Order;
@@ -9,25 +24,20 @@ import com.sam.library.student.exception.ResourceNotFoundException;
 import com.sam.library.student.repository.OrderRepository;
 import com.sam.library.student.repository.PaymentRepository;
 import com.sam.library.student.service.PaymentService;
+import com.sam.library.student.websocket.PaymentEventMessage;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.UUID;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Override
     public Page<Payment> getAllPayments(PaymentStatus status, Pageable pageable) {
@@ -92,6 +102,41 @@ public class PaymentServiceImpl implements PaymentService {
         Order order = payment.getOrder();
         paymentRepository.deleteById(id);
         syncOrderPaymentStatus(order);
+    }
+
+    @Override
+    @Transactional
+    public void autoMarkExpiredPaymentsAsPaid() {
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(2);
+
+        log.info("Cutoff === {}", cutoff);
+        List<Payment> expiredPayments = paymentRepository.findByStatusAndCreatedAtBefore(
+                PaymentStatus.UNPAID.name(), cutoff);
+
+        for (Payment payment : expiredPayments) {
+            payment.setStatus(PaymentStatus.PAID.name());
+            payment.setPaidAt(LocalDateTime.now());
+            paymentRepository.save(payment);
+            syncOrderPaymentStatus(payment.getOrder());
+            publishPaymentEvent(payment);
+        }
+    }
+
+    private void publishPaymentEvent(Payment payment) {
+        try {
+            PaymentEventMessage event = new PaymentEventMessage(
+                    payment.getId(),
+                    payment.getPaymentNo(),
+                    payment.getStatus(),
+                    payment.getAmount(),
+                    payment.getPaidAt()
+            );
+            String json = objectMapper.writeValueAsString(event);
+            stringRedisTemplate.convertAndSend("payment-events", Objects.requireNonNull(json));
+            log.info("Published payment event for {}", payment.getPaymentNo());
+        } catch (Exception e) {
+            log.error("Failed to publish payment event for {}", payment.getPaymentNo(), e);
+        }
     }
 
     // Recalculates order.paymentStatus based on all its payments
