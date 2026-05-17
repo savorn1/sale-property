@@ -13,6 +13,7 @@ public class MessageReminderDTO {
     private Long userId;
     private Long messageId;
     private Long conversationId;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime remindAt;
     private String note;
     private String messageContent;

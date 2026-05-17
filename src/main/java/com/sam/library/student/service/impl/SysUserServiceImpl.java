@@ -119,6 +119,12 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<SysUser> getSysUsersByIds(List<Long> ids) {
+        return sysUserRepository.findAllById(ids);
+    }
+
+    @Override
     public String deleteSysUsers(List<Long> ids) {
         List<SysUser> usersToDelete = sysUserRepository.findAllById(ids);
         if (usersToDelete.isEmpty()) {

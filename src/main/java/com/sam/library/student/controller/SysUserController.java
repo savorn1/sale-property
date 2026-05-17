@@ -64,6 +64,15 @@ public class SysUserController {
         return ResponseEntity.ok(ApiResponse.success(sysUserService.deleteSysUser(id)));
     }
 
+    @PreAuthorize("hasAuthority('USER_READ')")
+    @GetMapping("/by-ids")
+    public ResponseEntity<ApiResponse<List<SysUserDTO>>> getSysUsersByIds(@RequestParam List<Long> ids) {
+        List<SysUserDTO> result = sysUserService.getSysUsersByIds(ids).stream()
+                .map(sysUserMapper::toSysUserDTO)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
     @PreAuthorize("hasAuthority('USER_DELETE')")
     @DeleteMapping("/delete-all")
     public ResponseEntity<ApiResponse<String>> deleteSysUsers(@RequestBody List<Long> ids) {
