@@ -225,7 +225,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Transactional
     public void deleteSavedReply(Long id) {
         SavedReply reply = savedReplyRepo.findById(id)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"Saved reply not found: " + id));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Saved reply not found: " + id));
         if (!reply.getUserId().equals(UserContext.getUserId())) {
             throw new AppException(HttpStatus.FORBIDDEN, "Not your saved reply");
         }
@@ -255,7 +255,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Transactional
     public void cancelReminder(Long id) {
         MessageReminder reminder = reminderRepo.findById(id)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"Reminder not found: " + id));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Reminder not found: " + id));
         if (!reminder.getUserId().equals(UserContext.getUserId())) {
             throw new AppException(HttpStatus.FORBIDDEN, "Not your reminder");
         }
@@ -287,7 +287,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Transactional
     public void cancelScheduledMessage(Long id) {
         ScheduledMessage msg = scheduledMsgRepo.findById(id)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND,"Scheduled message not found: " + id));
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Scheduled message not found: " + id));
         if (!msg.getSenderId().equals(UserContext.getUserId())) {
             throw new AppException(HttpStatus.FORBIDDEN, "Not your scheduled message");
         }

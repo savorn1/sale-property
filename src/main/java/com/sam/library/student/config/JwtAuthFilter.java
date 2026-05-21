@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import io.jsonwebtoken.JwtException;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,7 +43,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        UUID uuid = jwtUtil.extractUuid(token);
+        UUID uuid;
+        try {
+            uuid = jwtUtil.extractUuid(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         if (uuid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             JwtUserClaims claims = sessionStore.find(uuid);

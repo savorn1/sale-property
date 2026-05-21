@@ -51,7 +51,9 @@ public class RateLimitAspect {
 
     private String resolveClientIp() {
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        if (attrs == null) return "unknown";
+        if (attrs == null) {
+            return "unknown";
+        }
         HttpServletRequest request = attrs.getRequest();
         String remoteAddr = request.getRemoteAddr();
         // Only trust X-Forwarded-For when the request comes from a local proxy (127.0.0.1 or ::1).

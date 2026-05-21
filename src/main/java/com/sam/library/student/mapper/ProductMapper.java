@@ -9,7 +9,7 @@ import com.sam.library.student.dto.CreateProductDTO;
 
 @Component
 public class ProductMapper {
-    
+
     public ProductDTO toProductDTO(Product p) {
         ProductDTO dto = new ProductDTO();
         dto.setId(p.getId());

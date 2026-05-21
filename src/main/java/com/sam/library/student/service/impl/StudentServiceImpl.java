@@ -30,7 +30,9 @@ public class StudentServiceImpl implements StudentService {
     public String registerStudent(Long id, String password) {
         String encryptedPassword = passwordEncoder.encode(password);
         int result = studentRepository.createStudentUser(id, encryptedPassword);
-        if (result == 0) throw new RuntimeException("Student not found.");
+        if (result == 0) {
+            throw new RuntimeException("Student not found.");
+        }
         return "Profile create Successfully!";
     }
 
@@ -42,7 +44,9 @@ public class StudentServiceImpl implements StudentService {
                 student.getEmail(),
                 student.getPhoto(),
                 student.getPhoneNumber());
-        if (result == 0) throw new RuntimeException("Student not found.");
+        if (result == 0) {
+            throw new RuntimeException("Student not found.");
+        }
         return "Profile Update Successfully!";
     }
 }

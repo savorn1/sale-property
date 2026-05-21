@@ -5,6 +5,7 @@ import com.sam.library.student.common.ApiResponse;
 import com.sam.library.student.dto.JwtUserClaims;
 import com.sam.library.student.dto.LoginRequest;
 import com.sam.library.student.dto.LoginResponse;
+import com.sam.library.student.dto.RefreshTokenRequest;
 import com.sam.library.student.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,11 @@ public class AuthController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<JwtUserClaims>> getProfile() {
         return ResponseEntity.ok(ApiResponse.success(authService.getProfile()));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<LoginResponse>> refresh(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(authService.refresh(request)));
     }
 
     @PostMapping("/logout")

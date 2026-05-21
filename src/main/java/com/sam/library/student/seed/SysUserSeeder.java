@@ -20,7 +20,9 @@ public class SysUserSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (sysUserRepository.count() > 0) return;
+        if (sysUserRepository.count() > 0) {
+            return;
+        }
 
         List<SysUser> users = List.of(
             build("admin",    "admin123",   "ACTIVE"),

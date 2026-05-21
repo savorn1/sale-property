@@ -76,7 +76,9 @@ public class RolePermissionSeeder implements CommandLineRunner {
     // ─── Roles ───────────────────────────────────────────────────────────────────
 
     private void seedRoles() {
-        if (roleRepository.count() > 0) return;
+        if (roleRepository.count() > 0) {
+            return;
+        }
 
         Map<String, Permission> all = permissionRepository.findAll().stream()
                 .collect(Collectors.toMap(Permission::getName, p -> p));
@@ -120,7 +122,9 @@ public class RolePermissionSeeder implements CommandLineRunner {
 
     private void seedUserRoles() {
         List<SysUser> users = sysUserRepository.findAll();
-        if (users.stream().anyMatch(u -> !u.getRoles().isEmpty())) return;
+        if (users.stream().anyMatch(u -> !u.getRoles().isEmpty())) {
+            return;
+        }
 
         Map<String, SysUser> userMap = users.stream()
                 .collect(Collectors.toMap(SysUser::getName, u -> u));
@@ -143,7 +147,9 @@ public class RolePermissionSeeder implements CommandLineRunner {
         for (String module : modules) {
             for (String action : CRUD) {
                 Permission p = all.get(module + "_" + action);
-                if (p != null) result.add(p);
+                if (p != null) {
+                    result.add(p);
+                }
             }
         }
         return result;
@@ -164,7 +170,9 @@ public class RolePermissionSeeder implements CommandLineRunner {
             String module = entry[0];
             for (int i = 1; i < entry.length; i++) {
                 Permission p = all.get(module + "_" + entry[i]);
-                if (p != null) result.add(p);
+                if (p != null) {
+                    result.add(p);
+                }
             }
         }
         return result;

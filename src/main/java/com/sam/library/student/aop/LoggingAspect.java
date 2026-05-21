@@ -55,10 +55,18 @@ public class LoggingAspect {
     }
 
     private static String layer(String className) {
-        if (className.endsWith("Controller")) return "CONTROLLER";
-        if (className.endsWith("ServiceImpl")) return "SERVICE";
-        if (className.endsWith("Scheduler")) return "SCHEDULER";
-        if (className.endsWith("Subscriber") || className.endsWith("Handler")) return "WEBSOCKET";
+        if (className.endsWith("Controller")) {
+            return "CONTROLLER";
+        }
+        if (className.endsWith("ServiceImpl")) {
+            return "SERVICE";
+        }
+        if (className.endsWith("Scheduler")) {
+            return "SCHEDULER";
+        }
+        if (className.endsWith("Subscriber") || className.endsWith("Handler")) {
+            return "WEBSOCKET";
+        }
         return "APP";
     }
 }

@@ -22,7 +22,7 @@ public class MessageDTO {
     private List<Attachment> attachments;
     private Long replyTo;
     private boolean deleted;
-    
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime deletedAt;
 
@@ -35,7 +35,7 @@ public class MessageDTO {
     private List<EditHistoryEntry> editHistory;
     private ForwardedFrom forwardedFrom;
     private List<Long> mentions;
-    
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 

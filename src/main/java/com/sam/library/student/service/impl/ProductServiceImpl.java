@@ -89,13 +89,17 @@ public class ProductServiceImpl implements ProductService {
                 product.getPrice(),
                 brand,
                 product.getImageUrl());
-        if (updated == 0) throw new ResourceNotFoundException("Product", id);
+        if (updated == 0) {
+            throw new ResourceNotFoundException("Product", id);
+        }
         return "Product updated successfully.";
     }
 
     @Override
     public String deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) throw new ResourceNotFoundException("Product", id);
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product", id);
+        }
         productRepository.deleteById(id);
         return "Product deleted successfully.";
     }

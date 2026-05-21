@@ -37,7 +37,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .claim("user", user)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .expiration(new Date(System.currentTimeMillis() + expiration * 60_000L))
                 .signWith(getSignKey(), ALGORITHM)
                 .compact();
     }

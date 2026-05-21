@@ -1,6 +1,5 @@
 package com.sam.library.student.common;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 
 public class ApiResponse<T> {

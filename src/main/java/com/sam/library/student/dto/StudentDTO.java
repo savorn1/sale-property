@@ -10,6 +10,6 @@ public class StudentDTO {
     private String photo;
     private String phoneNumber;
     private String email;
-    private String createdAt;   
+    private String createdAt;
     private String updatedAt;
 }

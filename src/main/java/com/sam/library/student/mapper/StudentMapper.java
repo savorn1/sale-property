@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StudentMapper {
-    
+
     public StudentDTO toStudentDTO(Student s) {
         StudentDTO student = new StudentDTO();
         student.setId(s.getId());
@@ -17,7 +17,7 @@ public class StudentMapper {
         student.setName(s.getName());
         student.setPhoto(s.getPhoto());
         student.setEmail(s.getEmail());
-       
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         student.setCreatedAt(s.getCreatedAt().format(formatter));
 

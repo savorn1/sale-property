@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ClientServiceImpl implements  ClientService {
     private final ClientRepository clientRepository;
-     
+
     @Override
     public List<Client> getAllClients() {
         return clientRepository.findAll();
@@ -47,7 +47,7 @@ public class ClientServiceImpl implements  ClientService {
     public Client createClient(Client client) {
         return clientRepository.save(client);
     }
-    
+
 
     @Override
     public Client updateClient(Long id, Client client) {
@@ -71,5 +71,5 @@ public class ClientServiceImpl implements  ClientService {
         clientRepository.deleteById(id);
         return "Client deleted successfully with id: " + id;
     }
-    
+
 }

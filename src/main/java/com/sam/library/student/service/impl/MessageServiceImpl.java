@@ -193,7 +193,10 @@ public class MessageServiceImpl implements MessageService {
 
     private void incrementUnreadForOthers(Long conversationId, Long senderId) {
         userConvRepo.findByUserIdAndConversationId(senderId, conversationId)
-                .ifPresent(uc -> { uc.setUnreadCount(0); userConvRepo.save(uc); });
+                .ifPresent(uc -> {
+                    uc.setUnreadCount(0);
+                    userConvRepo.save(uc);
+                });
 
         memberRepo.findByConversationId(conversationId).stream()
                 .filter(m -> !m.getUserId().equals(senderId) && !m.isBlocked())
