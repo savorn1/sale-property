@@ -1,11 +1,12 @@
 package com.sam.library.student.repository;
 
-import com.sam.library.student.entity.chat.ConversationMember;
-import com.sam.library.student.enums.MemberRole;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.sam.library.student.entity.chat.ConversationMember;
+import com.sam.library.student.enums.MemberRole;
 
 public interface ConversationMemberRepository extends JpaRepository<ConversationMember, Long> {
 

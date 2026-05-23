@@ -11,6 +11,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -56,6 +57,13 @@ public class GlobalExceptionHandler {
         ApiResponse<Void> response = ApiResponse.error(409, "Data conflict: resource already exists or constraint violated");
         log.warn("traceId={} status=409 message={}", response.getTraceId(), ex.getMostSpecificCause().getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(NoResourceFoundException ex) {
+        ApiResponse<Void> response = ApiResponse.error(404, ex.getMessage());
+        log.warn("traceId={} status=404 message={}", response.getTraceId(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(Exception.class)

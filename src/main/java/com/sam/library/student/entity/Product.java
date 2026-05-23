@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -15,7 +18,6 @@ public class Product extends BaseEntity {
     @Column(length = 50, nullable = false)
     private String name;
 
-
     @Column(length = 50, nullable = true)
     private String description;
 
@@ -24,6 +26,12 @@ public class Product extends BaseEntity {
 
     @Column
     private String imageUrl;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_image_urls", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_url")
+    @OrderColumn(name = "idx")
+    private List<String> imageUrls = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")

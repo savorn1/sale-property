@@ -3,6 +3,9 @@ package com.sam.library.student.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 public class ProductDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -15,4 +18,5 @@ public class ProductDTO {
     private Long categoryId;
     private String categoryName;
     private String imageUrl;
+    private List<String> imageUrls = new ArrayList<>();
 }

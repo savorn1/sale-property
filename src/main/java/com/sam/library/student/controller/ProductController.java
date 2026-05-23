@@ -3,6 +3,7 @@ package com.sam.library.student.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -39,6 +40,9 @@ public class ProductController {
     private final ProductService productService;
     private final ProductMapper productMapper;
 
+    private static final java.util.Set<String> SORTABLE_FIELDS =
+            java.util.Set.of("id", "name", "price", "createdAt");
+
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
     @GetMapping
     public ResponseEntity<PageResponse<ProductDTO>> getAllProducts(
@@ -47,12 +51,25 @@ public class ProductController {
             @Parameter(description = "Number of items per page", example = "10")
             @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Filter by name (partial match)")
-            @RequestParam(required = false) String name) {
+            @RequestParam(required = false) String name,
+            @Parameter(description = "Field to sort by: id, name, price, createdAt", example = "id")
+            @RequestParam(defaultValue = "id") String sortBy,
+            @Parameter(description = "Sort direction: asc or desc", example = "asc")
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        if (!SORTABLE_FIELDS.contains(sortBy)) {
+            throw new IllegalArgumentException(
+                "Invalid sortBy field '" + sortBy + "'. Allowed: " + SORTABLE_FIELDS);
+        }
 
         Long userId = UserContext.getUserId();
-        log.info("getAllProducts called by userId={}", userId);
+        log.info("getAllProducts called by userId={} sortBy={} sortDir={}", userId, sortBy, sortDir);
 
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<ProductDTO> result = productService.getAllProducts(name, pageable)
                 .map(productMapper::toProductDTO);
         return ResponseEntity.ok(PageResponse.of(result));

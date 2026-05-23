@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -76,22 +77,35 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public String updateProduct(Long id, Product product, Long brandId) {
-        Brand brand = null;
+    @Transactional
+    public String updateProduct(Long id, Product incoming, Long brandId) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", id));
+
+        product.setName(incoming.getName());
+        product.setDescription(incoming.getDescription());
+        product.setPrice(incoming.getPrice());
+
+        // Single image URL (original field)
+        if (incoming.getImageUrl() != null) {
+            product.setImageUrl(incoming.getImageUrl());
+        }
+
+        // Multiple image URLs (new field)
+        if (incoming.getImageUrls() != null) {
+            product.getImageUrls().clear();
+            product.getImageUrls().addAll(incoming.getImageUrls());
+        }
+
         if (brandId != null) {
-            brand = brandRepository.findById(brandId)
+            Brand brand = brandRepository.findById(brandId)
                     .orElseThrow(() -> new ResourceNotFoundException("Brand", brandId));
+            product.setBrand(brand);
+        } else {
+            product.setBrand(null);
         }
-        int updated = productRepository.updateProductDetails(
-                id,
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                brand,
-                product.getImageUrl());
-        if (updated == 0) {
-            throw new ResourceNotFoundException("Product", id);
-        }
+
+        productRepository.save(product);
         return "Product updated successfully.";
     }
 

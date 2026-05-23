@@ -1,5 +1,9 @@
 package com.sam.library.student.dto;
+
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class CreateProductDTO {
@@ -9,4 +13,5 @@ public class CreateProductDTO {
     private Long brandId;
     private Long categoryId;
     private String imageUrl;
+    private List<String> imageUrls = new ArrayList<>();
 }
