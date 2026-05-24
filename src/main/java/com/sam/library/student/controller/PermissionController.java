@@ -1,5 +1,20 @@
 package com.sam.library.student.controller;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.sam.library.student.common.ApiResponse;
 import com.sam.library.student.common.PageResponse;
 import com.sam.library.student.dto.CreatePermissionDTO;
@@ -7,14 +22,9 @@ import com.sam.library.student.dto.PermissionDTO;
 import com.sam.library.student.dto.PermissionFilterRequest;
 import com.sam.library.student.mapper.PermissionMapper;
 import com.sam.library.student.service.PermissionService;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/permissions")
@@ -51,8 +61,7 @@ public class PermissionController {
 
     @PreAuthorize("hasAuthority('PERMISSION_UPDATE')")
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<PermissionDTO>> update(@PathVariable Long id,
-                                                             @RequestBody CreatePermissionDTO dto) {
+    public ResponseEntity<ApiResponse<PermissionDTO>> update(@PathVariable Long id, @RequestBody CreatePermissionDTO dto) {
         return ResponseEntity.ok(ApiResponse.success("Permission updated",
                 permissionMapper.toDTO(permissionService.update(id, dto))));
     }

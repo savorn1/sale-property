@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,6 +24,7 @@ import com.sam.library.student.entity.Payment;
 import com.sam.library.student.entity.Product;
 import com.sam.library.student.enums.OrderStatus;
 import com.sam.library.student.enums.PaymentStatus;
+import com.sam.library.student.event.DashboardChangedEvent;
 import com.sam.library.student.exception.ResourceNotFoundException;
 import com.sam.library.student.repository.ClientRepository;
 import com.sam.library.student.repository.OrderRepository;
@@ -40,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private final ClientRepository clientRepository;
     private final ProductRepository productRepository;
     private final PaymentRepository paymentRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Page<Order> getAllOrders(String q, List<OrderStatus> status, List<PaymentStatus> paymentStatus, Pageable pageable) {
@@ -119,6 +122,7 @@ public class OrderServiceImpl implements OrderService {
         payment.setStatus(PaymentStatus.UNPAID.name());
         paymentRepository.save(payment);
 
+        eventPublisher.publishEvent(new DashboardChangedEvent(this));
         return savedOrder;
     }
 
@@ -130,7 +134,9 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getStatus() != null) {
             order.setStatus(dto.getStatus().name());
         }
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        eventPublisher.publishEvent(new DashboardChangedEvent(this));
+        return saved;
     }
 
     @Override
@@ -141,7 +147,9 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getPaymentStatus() != null) {
             order.setPaymentStatus(dto.getPaymentStatus().name());
         }
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        eventPublisher.publishEvent(new DashboardChangedEvent(this));
+        return saved;
     }
 
     @Override
@@ -151,6 +159,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ResourceNotFoundException("Order", id);
         }
         orderRepository.deleteById(id);
+        eventPublisher.publishEvent(new DashboardChangedEvent(this));
     }
 
     private String generateOrderNo() {

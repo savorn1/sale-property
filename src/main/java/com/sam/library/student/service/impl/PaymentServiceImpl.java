@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sam.library.student.dto.CreatePaymentDTO;
 import com.sam.library.student.dto.UpdatePaymentStatusDTO;
+import com.sam.library.student.event.DashboardChangedEvent;
 import com.sam.library.student.entity.Order;
 import com.sam.library.student.entity.Payment;
 import com.sam.library.student.enums.PaymentStatus;
@@ -38,6 +40,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderRepository orderRepository;
     private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Page<Payment> getAllPayments(PaymentStatus status, Pageable pageable) {
@@ -73,6 +76,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment saved = paymentRepository.save(payment);
         syncOrderPaymentStatus(order);
+        eventPublisher.publishEvent(new DashboardChangedEvent(this));
         return saved;
     }
 
@@ -91,6 +95,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment saved = paymentRepository.save(payment);
         syncOrderPaymentStatus(payment.getOrder());
+        eventPublisher.publishEvent(new DashboardChangedEvent(this));
         return saved;
     }
 
@@ -102,6 +107,7 @@ public class PaymentServiceImpl implements PaymentService {
         Order order = payment.getOrder();
         paymentRepository.deleteById(id);
         syncOrderPaymentStatus(order);
+        eventPublisher.publishEvent(new DashboardChangedEvent(this));
     }
 
     @Override
@@ -113,6 +119,8 @@ public class PaymentServiceImpl implements PaymentService {
         List<Payment> expiredPayments = paymentRepository.findByStatusAndCreatedAtBefore(
                 PaymentStatus.UNPAID.name(), cutoff);
 
+        if (expiredPayments.isEmpty()) return;
+
         for (Payment payment : expiredPayments) {
             payment.setStatus(PaymentStatus.PAID.name());
             payment.setPaidAt(LocalDateTime.now());
@@ -120,6 +128,9 @@ public class PaymentServiceImpl implements PaymentService {
             syncOrderPaymentStatus(payment.getOrder());
             publishPaymentEvent(payment);
         }
+
+        // One broadcast covers all expired-payment updates
+        eventPublisher.publishEvent(new DashboardChangedEvent(this));
     }
 
     private void publishPaymentEvent(Payment payment) {
