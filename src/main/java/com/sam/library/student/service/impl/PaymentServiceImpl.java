@@ -47,7 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
         Specification<Payment> spec = Specification.where(null);
 
         if (status != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status.name()));
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
         }
 
         return paymentRepository.findAll(spec, pageable);
@@ -70,7 +70,7 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setOrder(order);
         payment.setAmount(dto.getAmount() != null ? dto.getAmount() : order.getTotal());
         payment.setPaymentMethod(dto.getPaymentMethod());
-        payment.setStatus(dto.getStatus() != null ? dto.getStatus() : PaymentStatus.UNPAID.name());
+        payment.setStatus(dto.getStatus() != null ? dto.getStatus() : PaymentStatus.UNPAID);
         payment.setPaidAt(dto.getPaidAt());
         payment.setRemark(dto.getRemark());
 
@@ -87,7 +87,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", id));
 
         if (dto.getPaymentStatus() != null) {
-            payment.setStatus(dto.getPaymentStatus().name());
+            payment.setStatus(dto.getPaymentStatus());
             if (dto.getPaymentStatus() == PaymentStatus.PAID && payment.getPaidAt() == null) {
                 payment.setPaidAt(LocalDateTime.now());
             }
@@ -117,12 +117,14 @@ public class PaymentServiceImpl implements PaymentService {
 
         log.info("Cutoff === {}", cutoff);
         List<Payment> expiredPayments = paymentRepository.findByStatusAndCreatedAtBefore(
-                PaymentStatus.UNPAID.name(), cutoff);
+                PaymentStatus.UNPAID, cutoff);
 
-        if (expiredPayments.isEmpty()) return;
+        if (expiredPayments.isEmpty()) {
+            return;
+        }
 
         for (Payment payment : expiredPayments) {
-            payment.setStatus(PaymentStatus.PAID.name());
+            payment.setStatus(PaymentStatus.PAID);
             payment.setPaidAt(LocalDateTime.now());
             paymentRepository.save(payment);
             syncOrderPaymentStatus(payment.getOrder());
@@ -138,7 +140,7 @@ public class PaymentServiceImpl implements PaymentService {
             PaymentEventMessage event = new PaymentEventMessage(
                     payment.getId(),
                     payment.getPaymentNo(),
-                    payment.getStatus(),
+                    payment.getStatus().name(),
                     payment.getAmount(),
                     payment.getPaidAt()
             );
@@ -155,19 +157,19 @@ public class PaymentServiceImpl implements PaymentService {
         List<Payment> payments = paymentRepository.findByOrderId(order.getId());
 
         BigDecimal totalPaid = payments.stream()
-                .filter(p -> PaymentStatus.PAID.name().equals(p.getStatus()))
+                .filter(p -> PaymentStatus.PAID == p.getStatus())
                 .map(Payment::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        String newStatus;
+        PaymentStatus newStatus;
         if (totalPaid.compareTo(order.getTotal()) >= 0) {
-            newStatus = PaymentStatus.PAID.name();
+            newStatus = PaymentStatus.PAID;
         } else if (totalPaid.compareTo(BigDecimal.ZERO) > 0) {
-            newStatus = PaymentStatus.PARTIAL.name();
+            newStatus = PaymentStatus.PARTIAL;
         } else {
             boolean allRefunded = !payments.isEmpty() &&
-                    payments.stream().allMatch(p -> PaymentStatus.REFUNDED.name().equals(p.getStatus()));
-            newStatus = allRefunded ? PaymentStatus.REFUNDED.name() : PaymentStatus.UNPAID.name();
+                    payments.stream().allMatch(p -> PaymentStatus.REFUNDED == p.getStatus());
+            newStatus = allRefunded ? PaymentStatus.REFUNDED : PaymentStatus.UNPAID;
         }
 
         order.setPaymentStatus(newStatus);

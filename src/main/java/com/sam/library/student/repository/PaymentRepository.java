@@ -8,11 +8,12 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import com.sam.library.student.entity.Payment;
+import com.sam.library.student.enums.PaymentStatus;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long>, JpaSpecificationExecutor<Payment> {
     List<Payment> findByOrderId(Long orderId);
 
-    List<Payment> findByStatusAndCreatedAtBefore(String status, LocalDateTime cutoff);
+    List<Payment> findByStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime cutoff);
 
     /**
      * Monthly payment chart grouped by year, month and status.

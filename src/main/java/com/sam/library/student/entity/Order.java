@@ -1,5 +1,7 @@
 package com.sam.library.student.entity;
 
+import com.sam.library.student.enums.OrderStatus;
+import com.sam.library.student.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -29,8 +31,9 @@ public class Order extends BaseEntity {
     @Column(name = "order_date")
     private LocalDateTime orderDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String status = "PENDING";
+    private OrderStatus status = OrderStatus.PENDING;
 
     @Column(precision = 12, scale = 2)
     private BigDecimal subtotal = BigDecimal.ZERO;
@@ -44,8 +47,9 @@ public class Order extends BaseEntity {
     @Column(precision = 12, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", length = 20)
-    private String paymentStatus = "UNPAID";
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Column(columnDefinition = "TEXT")
     private String remark;

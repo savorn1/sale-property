@@ -1,5 +1,6 @@
 package com.sam.library.student.entity;
 
+import com.sam.library.student.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,8 +31,9 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_method", length = 30)
     private String paymentMethod;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String status = "UNPAID";
+    private PaymentStatus status = PaymentStatus.UNPAID;
 
     @Column(name = "paid_at")
     private LocalDateTime paidAt;

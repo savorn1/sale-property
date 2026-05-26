@@ -85,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderNo(generateOrderNo());
         order.setClient(client);
         order.setOrderDate(dto.getOrderDate() != null ? dto.getOrderDate() : LocalDateTime.now());
-        order.setStatus(dto.getStatus() != null ? dto.getStatus() : "PENDING");
+        order.setStatus(dto.getStatus() != null ? dto.getStatus() : OrderStatus.PENDING);
         order.setDiscount(dto.getDiscount() != null ? dto.getDiscount() : BigDecimal.ZERO);
         order.setTax(dto.getTax() != null ? dto.getTax() : BigDecimal.ZERO);
         order.setRemark(dto.getRemark());
@@ -119,7 +119,7 @@ public class OrderServiceImpl implements OrderService {
         payment.setPaymentNo(generatePaymentNo());
         payment.setOrder(savedOrder);
         payment.setAmount(savedOrder.getTotal());
-        payment.setStatus(PaymentStatus.UNPAID.name());
+        payment.setStatus(PaymentStatus.UNPAID);
         paymentRepository.save(payment);
 
         eventPublisher.publishEvent(new DashboardChangedEvent(this));
@@ -132,7 +132,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", id));
         if (dto.getStatus() != null) {
-            order.setStatus(dto.getStatus().name());
+            order.setStatus(dto.getStatus());
         }
         Order saved = orderRepository.save(order);
         eventPublisher.publishEvent(new DashboardChangedEvent(this));
@@ -145,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", id));
         if (dto.getPaymentStatus() != null) {
-            order.setPaymentStatus(dto.getPaymentStatus().name());
+            order.setPaymentStatus(dto.getPaymentStatus());
         }
         Order saved = orderRepository.save(order);
         eventPublisher.publishEvent(new DashboardChangedEvent(this));

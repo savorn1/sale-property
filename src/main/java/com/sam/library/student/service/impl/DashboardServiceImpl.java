@@ -64,7 +64,7 @@ public class DashboardServiceImpl implements DashboardService {
     private List<OrderStatusSummaryDTO> buildOrderStatusSummary() {
         return orderRepository.getOrderStatusSummary().stream()
                 .map(row -> new OrderStatusSummaryDTO(
-                        (String) row[0],
+                        row[0].toString(),
                         ((Number) row[1]).longValue(),
                         row[2] != null ? new BigDecimal(row[2].toString()) : BigDecimal.ZERO))
                 .toList();
@@ -80,7 +80,7 @@ public class DashboardServiceImpl implements DashboardService {
                             year,
                             month,
                             label,
-                            (String) row[2],
+                            row[2].toString(),
                             ((Number) row[3]).longValue(),
                             row[4] != null ? new BigDecimal(row[4].toString()) : BigDecimal.ZERO);
                 })
