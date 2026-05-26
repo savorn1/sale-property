@@ -32,7 +32,7 @@ public class RolePermissionSeeder implements CommandLineRunner {
     private static final List<String> MODULES = List.of(
         "STUDENT", "PRODUCT", "BRAND", "CATEGORY",
         "CLIENT", "SUPPLIER", "USER", "ROLE", "PERMISSION",
-        "ORDER", "PURCHASE_ORDER", "STOCK"
+        "ORDER", "PURCHASE_ORDER", "STOCK", "OPEN_ITEM"
     );
 
     private static final String[] CRUD = {"READ", "CREATE", "UPDATE", "DELETE"};
@@ -91,7 +91,7 @@ public class RolePermissionSeeder implements CommandLineRunner {
         // MANAGER — full CRUD on business modules (no user/role/permission management)
         Role manager = role("Manager", "MANAGER", false, "Manage business data",
                 perms(all, "STUDENT", "PRODUCT", "BRAND", "CATEGORY",
-                           "CLIENT", "SUPPLIER", "ORDER", "PURCHASE_ORDER", "STOCK"));
+                           "CLIENT", "SUPPLIER", "ORDER", "PURCHASE_ORDER", "STOCK", "OPEN_ITEM"));
 
         // STAFF — default role, limited write access on core modules
         Role staff = role("Staff", "STAFF", true, "Day-to-day operations",
@@ -104,7 +104,8 @@ public class RolePermissionSeeder implements CommandLineRunner {
                     module("SUPPLIER",       "READ"),
                     module("ORDER",          "READ", "CREATE"),
                     module("PURCHASE_ORDER", "READ", "CREATE"),
-                    module("STOCK",          "READ", "CREATE")
+                    module("STOCK",          "READ", "CREATE"),
+                    module("OPEN_ITEM",      "READ", "CREATE", "UPDATE")
                 ));
 
         // GUEST — read-only across all business modules
@@ -118,7 +119,8 @@ public class RolePermissionSeeder implements CommandLineRunner {
                     module("SUPPLIER",       "READ"),
                     module("ORDER",          "READ"),
                     module("PURCHASE_ORDER", "READ"),
-                    module("STOCK",          "READ")
+                    module("STOCK",          "READ"),
+                    module("OPEN_ITEM",      "READ")
                 ));
 
         roleRepository.saveAll(List.of(admin, manager, staff, guest));

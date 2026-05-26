@@ -1,6 +1,5 @@
 package com.sam.library.student.service;
 
-import com.sam.library.student.dto.CreateStockMovementDTO;
 import com.sam.library.student.entity.StockMovement;
 import com.sam.library.student.enums.StockMovementReason;
 import com.sam.library.student.enums.StockMovementType;
@@ -9,19 +8,15 @@ import org.springframework.data.domain.Pageable;
 
 public interface StockMovementService {
 
-    /** Manual stock adjustment (via REST) */
-    StockMovement createMovement(CreateStockMovementDTO dto);
-
     /**
-     * Programmatic stock IN — called internally by purchase order receive.
-     * Returns the saved StockMovement.
+     * Programmatic stock IN — called by purchase order receive and open item confirm.
      */
     StockMovement stockIn(Long productId, int qty, StockMovementReason reason,
                           String referenceNo, Long referenceId, String remark);
 
     /**
-     * Programmatic stock OUT — called internally by sales order creation.
-     * Throws AppException if insufficient stock.
+     * Programmatic stock OUT — called by sales order creation.
+     * Throws AppException(400) if insufficient stock.
      */
     StockMovement stockOut(Long productId, int qty, StockMovementReason reason,
                            String referenceNo, Long referenceId, String remark);

@@ -2,7 +2,6 @@ package com.sam.library.student.controller;
 
 import com.sam.library.student.common.ApiResponse;
 import com.sam.library.student.common.PageResponse;
-import com.sam.library.student.dto.CreateStockMovementDTO;
 import com.sam.library.student.dto.StockMovementDTO;
 import com.sam.library.student.entity.StockMovement;
 import com.sam.library.student.enums.StockMovementType;
@@ -10,7 +9,6 @@ import com.sam.library.student.mapper.StockMovementMapper;
 import com.sam.library.student.service.StockMovementService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/stock-movement")
-@Tag(name = "Stock Movement", description = "Stock in / stock out management APIs")
+@Tag(name = "Stock Movement", description = "Read-only stock movement history APIs")
 @RequiredArgsConstructor
 public class StockMovementController {
 
@@ -52,15 +50,5 @@ public class StockMovementController {
     public ResponseEntity<ApiResponse<StockMovementDTO>> getMovementById(@PathVariable Long id) {
         StockMovement movement = stockMovementService.getMovementById(id);
         return ResponseEntity.ok(ApiResponse.success(stockMovementMapper.toDTO(movement)));
-    }
-
-    @PreAuthorize("hasAuthority('STOCK_CREATE')")
-    @PostMapping
-    public ResponseEntity<ApiResponse<StockMovementDTO>> createMovement(
-            @Valid @RequestBody CreateStockMovementDTO dto) {
-        StockMovement movement = stockMovementService.createMovement(dto);
-        String msg = dto.getType() == StockMovementType.IN ? "Stock in recorded" : "Stock out recorded";
-        return ResponseEntity.status(201)
-                .body(ApiResponse.success(msg, stockMovementMapper.toDTO(movement)));
     }
 }

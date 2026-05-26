@@ -1,6 +1,5 @@
 package com.sam.library.student.service.impl;
 
-import com.sam.library.student.dto.CreateStockMovementDTO;
 import com.sam.library.student.entity.Product;
 import com.sam.library.student.entity.StockMovement;
 import com.sam.library.student.enums.StockMovementReason;
@@ -23,18 +22,6 @@ public class StockMovementServiceImpl implements StockMovementService {
 
     private final StockMovementRepository stockMovementRepository;
     private final ProductRepository productRepository;
-
-    @Override
-    @Transactional
-    public StockMovement createMovement(CreateStockMovementDTO dto) {
-        if (dto.getType() == StockMovementType.IN) {
-            return stockIn(dto.getProductId(), dto.getQty(), dto.getReason(),
-                    dto.getReferenceNo(), null, dto.getRemark());
-        } else {
-            return stockOut(dto.getProductId(), dto.getQty(), dto.getReason(),
-                    dto.getReferenceNo(), null, dto.getRemark());
-        }
-    }
 
     @Override
     @Transactional
