@@ -20,4 +20,6 @@ public class ProductDTO {
     private String imageUrl;
     private List<String> imageUrls = new ArrayList<>();
     private Integer stock;
+    /** Low-stock threshold configured on this product. */
+    private Integer minStockLevel;
 }

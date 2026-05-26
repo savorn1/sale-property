@@ -14,4 +14,6 @@ public class CreateProductDTO {
     private Long categoryId;
     private String imageUrl;
     private List<String> imageUrls = new ArrayList<>();
+    /** Low-stock threshold; 0 = alerts disabled. */
+    private Integer minStockLevel = 0;
 }

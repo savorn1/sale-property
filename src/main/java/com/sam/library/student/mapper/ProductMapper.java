@@ -21,6 +21,7 @@ public class ProductMapper {
         dto.setImageUrl(p.getImageUrl());
         dto.setImageUrls(p.getImageUrls() != null ? p.getImageUrls() : new ArrayList<>());
         dto.setStock(p.getStock());
+        dto.setMinStockLevel(p.getMinStockLevel());
         if (p.getBrand() != null) {
             dto.setBrandId(p.getBrand().getId());
             dto.setBrandName(p.getBrand().getName());
@@ -39,6 +40,9 @@ public class ProductMapper {
         product.setPrice(dto.getPrice());
         product.setImageUrl(dto.getImageUrl());
         product.setImageUrls(dto.getImageUrls() != null ? dto.getImageUrls() : new ArrayList<>());
+        if (dto.getMinStockLevel() != null) {
+            product.setMinStockLevel(dto.getMinStockLevel());
+        }
         return product;
     }
 }

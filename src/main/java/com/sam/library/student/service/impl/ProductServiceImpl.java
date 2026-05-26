@@ -85,6 +85,9 @@ public class ProductServiceImpl implements ProductService {
         product.setName(incoming.getName());
         product.setDescription(incoming.getDescription());
         product.setPrice(incoming.getPrice());
+        if (incoming.getMinStockLevel() != null) {
+            product.setMinStockLevel(incoming.getMinStockLevel());
+        }
 
         // Single image URL (original field)
         if (incoming.getImageUrl() != null) {

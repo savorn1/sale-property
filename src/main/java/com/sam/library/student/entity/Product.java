@@ -36,6 +36,15 @@ public class Product extends BaseEntity {
     @Column(nullable = false, columnDefinition = "integer default 0")
     private Integer stock = 0;
 
+    /**
+     * Low-stock threshold. A {@code StockAlertEvent} is fired whenever
+     * {@code stock <= minStockLevel} after a stock-out, and a RESTOCKED
+     * alert is fired when stock rises back above the threshold after a
+     * stock-in. Defaults to 0 (alerts disabled).
+     */
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private Integer minStockLevel = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     private Brand brand;

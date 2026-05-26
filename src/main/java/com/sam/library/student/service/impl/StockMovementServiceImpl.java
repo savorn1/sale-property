@@ -2,14 +2,17 @@ package com.sam.library.student.service.impl;
 
 import com.sam.library.student.entity.Product;
 import com.sam.library.student.entity.StockMovement;
+import com.sam.library.student.enums.StockAlertType;
 import com.sam.library.student.enums.StockMovementReason;
 import com.sam.library.student.enums.StockMovementType;
+import com.sam.library.student.event.StockAlertEvent;
 import com.sam.library.student.exception.AppException;
 import com.sam.library.student.exception.ResourceNotFoundException;
 import com.sam.library.student.repository.ProductRepository;
 import com.sam.library.student.repository.StockMovementRepository;
 import com.sam.library.student.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,7 @@ public class StockMovementServiceImpl implements StockMovementService {
 
     private final StockMovementRepository stockMovementRepository;
     private final ProductRepository productRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -36,7 +40,16 @@ public class StockMovementServiceImpl implements StockMovementService {
         product.setStock(after);
         productRepository.save(product);
 
-        return saveMovement(product, StockMovementType.IN, reason, qty, before, after, referenceNo, referenceId, remark);
+        StockMovement movement = saveMovement(product, StockMovementType.IN, reason, qty, before, after, referenceNo, referenceId, remark);
+
+        // Fire RESTOCKED alert when stock recovers above the threshold
+        int threshold = product.getMinStockLevel() != null ? product.getMinStockLevel() : 0;
+        if (threshold > 0 && before <= threshold && after > threshold) {
+            eventPublisher.publishEvent(new StockAlertEvent(
+                    this, product.getId(), product.getName(), after, threshold, StockAlertType.RESTOCKED));
+        }
+
+        return movement;
     }
 
     @Override
@@ -57,7 +70,16 @@ public class StockMovementServiceImpl implements StockMovementService {
         product.setStock(after);
         productRepository.save(product);
 
-        return saveMovement(product, StockMovementType.OUT, reason, qty, before, after, referenceNo, referenceId, remark);
+        StockMovement movement = saveMovement(product, StockMovementType.OUT, reason, qty, before, after, referenceNo, referenceId, remark);
+
+        // Fire LOW_STOCK alert when stock drops to or below the threshold
+        int threshold = product.getMinStockLevel() != null ? product.getMinStockLevel() : 0;
+        if (threshold > 0 && after <= threshold) {
+            eventPublisher.publishEvent(new StockAlertEvent(
+                    this, product.getId(), product.getName(), after, threshold, StockAlertType.LOW_STOCK));
+        }
+
+        return movement;
     }
 
     @Override
