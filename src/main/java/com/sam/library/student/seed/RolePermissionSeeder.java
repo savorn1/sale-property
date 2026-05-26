@@ -31,7 +31,8 @@ public class RolePermissionSeeder implements CommandLineRunner {
     // ─── Add a new module here to auto-generate its READ/CREATE/UPDATE/DELETE permissions ──
     private static final List<String> MODULES = List.of(
         "STUDENT", "PRODUCT", "BRAND", "CATEGORY",
-        "CLIENT", "SUPPLIER", "USER", "ROLE", "PERMISSION", "ORDER"
+        "CLIENT", "SUPPLIER", "USER", "ROLE", "PERMISSION",
+        "ORDER", "PURCHASE_ORDER", "STOCK"
     );
 
     private static final String[] CRUD = {"READ", "CREATE", "UPDATE", "DELETE"};
@@ -90,29 +91,34 @@ public class RolePermissionSeeder implements CommandLineRunner {
         // MANAGER — full CRUD on business modules (no user/role/permission management)
         Role manager = role("Manager", "MANAGER", false, "Manage business data",
                 perms(all, "STUDENT", "PRODUCT", "BRAND", "CATEGORY",
-                           "CLIENT", "SUPPLIER", "ORDER"));
+                           "CLIENT", "SUPPLIER", "ORDER", "PURCHASE_ORDER", "STOCK"));
 
         // STAFF — default role, limited write access on core modules
         Role staff = role("Staff", "STAFF", true, "Day-to-day operations",
                 permsOf(all,
-                    module("STUDENT",  "READ", "CREATE", "UPDATE"),
-                    module("PRODUCT",  "READ", "CREATE", "UPDATE"),
-                    module("BRAND",    "READ"),
-                    module("CATEGORY", "READ"),
-                    module("CLIENT",   "READ", "CREATE"),
-                    module("SUPPLIER", "READ"),
-                    module("ORDER",    "READ", "CREATE")
+                    module("STUDENT",        "READ", "CREATE", "UPDATE"),
+                    module("PRODUCT",        "READ", "CREATE", "UPDATE"),
+                    module("BRAND",          "READ"),
+                    module("CATEGORY",       "READ"),
+                    module("CLIENT",         "READ", "CREATE"),
+                    module("SUPPLIER",       "READ"),
+                    module("ORDER",          "READ", "CREATE"),
+                    module("PURCHASE_ORDER", "READ", "CREATE"),
+                    module("STOCK",          "READ", "CREATE")
                 ));
 
         // GUEST — read-only across all business modules
         Role guest = role("Guest", "GUEST", false, "Read-only access",
                 permsOf(all,
-                    module("STUDENT",  "READ"),
-                    module("PRODUCT",  "READ"),
-                    module("BRAND",    "READ"),
-                    module("CATEGORY", "READ"),
-                    module("CLIENT",   "READ"),
-                    module("SUPPLIER", "READ")
+                    module("STUDENT",        "READ"),
+                    module("PRODUCT",        "READ"),
+                    module("BRAND",          "READ"),
+                    module("CATEGORY",       "READ"),
+                    module("CLIENT",         "READ"),
+                    module("SUPPLIER",       "READ"),
+                    module("ORDER",          "READ"),
+                    module("PURCHASE_ORDER", "READ"),
+                    module("STOCK",          "READ")
                 ));
 
         roleRepository.saveAll(List.of(admin, manager, staff, guest));

@@ -24,6 +24,7 @@ import com.sam.library.student.entity.Payment;
 import com.sam.library.student.entity.Product;
 import com.sam.library.student.enums.OrderStatus;
 import com.sam.library.student.enums.PaymentStatus;
+import com.sam.library.student.enums.StockMovementReason;
 import com.sam.library.student.event.DashboardChangedEvent;
 import com.sam.library.student.exception.ResourceNotFoundException;
 import com.sam.library.student.repository.ClientRepository;
@@ -31,6 +32,7 @@ import com.sam.library.student.repository.OrderRepository;
 import com.sam.library.student.repository.PaymentRepository;
 import com.sam.library.student.repository.ProductRepository;
 import com.sam.library.student.service.OrderService;
+import com.sam.library.student.service.StockMovementService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
     private final ClientRepository clientRepository;
     private final ProductRepository productRepository;
     private final PaymentRepository paymentRepository;
+    private final StockMovementService stockMovementService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -115,6 +118,18 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
+        // Deduct stock for every line item
+        for (OrderDetail detail : savedOrder.getDetails()) {
+            stockMovementService.stockOut(
+                    detail.getProduct().getId(),
+                    detail.getQty(),
+                    StockMovementReason.SALE,
+                    savedOrder.getOrderNo(),
+                    savedOrder.getId(),
+                    null
+            );
+        }
+
         Payment payment = new Payment();
         payment.setPaymentNo(generatePaymentNo());
         payment.setOrder(savedOrder);
@@ -131,10 +146,27 @@ public class OrderServiceImpl implements OrderService {
     public Order updateOrderStatus(Long id, UpdateOrderStatusDTO dto) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", id));
+
+        OrderStatus previous = order.getStatus();
         if (dto.getStatus() != null) {
             order.setStatus(dto.getStatus());
         }
         Order saved = orderRepository.save(order);
+
+        // Reverse stock when an order is cancelled (only if it wasn't already cancelled)
+        if (dto.getStatus() == OrderStatus.CANCELLED && previous != OrderStatus.CANCELLED) {
+            for (OrderDetail detail : saved.getDetails()) {
+                stockMovementService.stockIn(
+                        detail.getProduct().getId(),
+                        detail.getQty(),
+                        StockMovementReason.RETURN_FROM_CUSTOMER,
+                        saved.getOrderNo(),
+                        saved.getId(),
+                        "Order cancelled"
+                );
+            }
+        }
+
         eventPublisher.publishEvent(new DashboardChangedEvent(this));
         return saved;
     }

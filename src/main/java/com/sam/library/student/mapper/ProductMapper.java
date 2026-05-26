@@ -20,6 +20,7 @@ public class ProductMapper {
         dto.setPrice(p.getPrice());
         dto.setImageUrl(p.getImageUrl());
         dto.setImageUrls(p.getImageUrls() != null ? p.getImageUrls() : new ArrayList<>());
+        dto.setStock(p.getStock());
         if (p.getBrand() != null) {
             dto.setBrandId(p.getBrand().getId());
             dto.setBrandName(p.getBrand().getName());

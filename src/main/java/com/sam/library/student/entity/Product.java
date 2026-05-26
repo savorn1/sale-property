@@ -33,6 +33,9 @@ public class Product extends BaseEntity {
     @OrderColumn(name = "idx")
     private List<String> imageUrls = new ArrayList<>();
 
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private Integer stock = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     private Brand brand;

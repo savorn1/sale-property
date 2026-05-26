@@ -19,4 +19,5 @@ public class ProductDTO {
     private String categoryName;
     private String imageUrl;
     private List<String> imageUrls = new ArrayList<>();
+    private Integer stock;
 }
