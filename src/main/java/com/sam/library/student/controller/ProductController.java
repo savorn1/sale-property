@@ -41,7 +41,7 @@ public class ProductController {
     private final ProductMapper productMapper;
 
     private static final java.util.Set<String> SORTABLE_FIELDS =
-            java.util.Set.of("id", "name", "price", "createdAt");
+            java.util.Set.of("id", "name", "price", "stock", "createdAt");
 
     @PreAuthorize("hasAuthority('PRODUCT_READ')")
     @GetMapping
@@ -52,7 +52,7 @@ public class ProductController {
             @RequestParam(defaultValue = "10") int size,
             @Parameter(description = "Filter by name (partial match)")
             @RequestParam(required = false) String name,
-            @Parameter(description = "Field to sort by: id, name, price, createdAt", example = "id")
+            @Parameter(description = "Field to sort by: id, name, price, stock, createdAt", example = "id")
             @RequestParam(defaultValue = "id") String sortBy,
             @Parameter(description = "Sort direction: asc or desc", example = "asc")
             @RequestParam(defaultValue = "asc") String sortDir) {
