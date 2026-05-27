@@ -32,7 +32,7 @@ public class RolePermissionSeeder implements CommandLineRunner {
     private static final List<String> MODULES = List.of(
         "STUDENT", "PRODUCT", "BRAND", "CATEGORY",
         "CLIENT", "SUPPLIER", "USER", "ROLE", "PERMISSION",
-        "ORDER", "PURCHASE_ORDER", "STOCK", "OPEN_ITEM"
+        "ORDER", "PURCHASE_ORDER", "STOCK", "OPEN_ITEM", "SETTING"
     );
 
     private static final String[] CRUD = {"READ", "CREATE", "UPDATE", "DELETE"};
@@ -88,10 +88,11 @@ public class RolePermissionSeeder implements CommandLineRunner {
         Role admin = role("Administrator", "ADMIN", false, "Full system access",
                 perms(all, MODULES.toArray(String[]::new)));
 
-        // MANAGER — full CRUD on business modules (no user/role/permission management)
+        // MANAGER — full CRUD on business modules + can change settings
         Role manager = role("Manager", "MANAGER", false, "Manage business data",
                 perms(all, "STUDENT", "PRODUCT", "BRAND", "CATEGORY",
-                           "CLIENT", "SUPPLIER", "ORDER", "PURCHASE_ORDER", "STOCK", "OPEN_ITEM"));
+                           "CLIENT", "SUPPLIER", "ORDER", "PURCHASE_ORDER", "STOCK", "OPEN_ITEM",
+                           "SETTING"));
 
         // STAFF — default role, limited write access on core modules
         Role staff = role("Staff", "STAFF", true, "Day-to-day operations",

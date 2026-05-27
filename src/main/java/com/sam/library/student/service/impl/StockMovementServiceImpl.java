@@ -11,6 +11,7 @@ import com.sam.library.student.exception.ResourceNotFoundException;
 import com.sam.library.student.repository.ProductRepository;
 import com.sam.library.student.repository.StockMovementRepository;
 import com.sam.library.student.service.StockMovementService;
+import com.sam.library.student.service.SystemSettingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,7 @@ public class StockMovementServiceImpl implements StockMovementService {
     private final StockMovementRepository stockMovementRepository;
     private final ProductRepository productRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final SystemSettingService systemSettingService;
 
     @Override
     @Transactional
@@ -60,7 +62,7 @@ public class StockMovementServiceImpl implements StockMovementService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product", productId));
 
         int before = product.getStock() != null ? product.getStock() : 0;
-        if (before < qty) {
+        if (before < qty && !systemSettingService.isAllowOverselling()) {
             throw new AppException(HttpStatus.BAD_REQUEST,
                     "Insufficient stock for product '" + product.getName() +
                     "'. Available: " + before + ", requested: " + qty);
