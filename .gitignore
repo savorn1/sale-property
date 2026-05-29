@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+chat.md
+spring-data-jpa-keywords.md
+checkstyle.xml
+docker-compose.yml

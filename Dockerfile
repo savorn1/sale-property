@@ -1,14 +1,14 @@
-# Build app from maven
-FROM maven:3-amazoncorretto-23-alpine AS build
+# Build stage
+FROM maven:3.9-amazoncorretto-21-alpine AS build
 WORKDIR /app
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline -q
 COPY src ./src
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -q
 
-# Run app
-FROM openjdk:23-jdk-slim
-VOLUME /tmp
-EXPOSE 8081
-COPY --from=build /app/target/*.jar /app/student-app.jar
-ENTRYPOINT ["java", "-jar", "/app/student-app.jar"]
+# Run stage
+FROM amazoncorretto:21-alpine
+WORKDIR /app
+EXPOSE 8083
+COPY --from=build /app/target/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
